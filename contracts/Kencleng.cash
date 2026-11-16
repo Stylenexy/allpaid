@@ -1,0 +1,89 @@
+pragma cashscript ^0.14.0;
+
+// Kencleng: a shared tip jar for a group of 2 to 4 people.
+//
+// Every coin paid to this contract can leave in exactly one way: split between
+// the members, in the shares fixed when the jar was made. There is no owner key.
+// Anyone may trigger the split (the network fee comes out of the jar), and
+// nobody, including the person who triggers it, can change where the money goes.
+contract Kencleng(
+    // Locking bytecode of each member, in payout order. Unused slots are 0x.
+    bytes lock0,
+    bytes lock1,
+    bytes lock2,
+    bytes lock3,
+    // Shares of members 0, 1 and 2 in basis points (100 = 1%).
+    // The last member receives whatever is left, so the shares always add up
+    // to the whole pot and rounding never loses a satoshi.
+    int bps0,
+    int bps1,
+    int bps2,
+    // How many members this jar pays: 2, 3 or 4.
+    int members,
+    // Network fee, in satoshis, taken from each payment when it is split.
+    int fee
+) {
+    // Split one payment between the members.
+    function distribute() {
+        require(members >= 2, "a jar pays 2 to 4 members");
+        require(members <= 4, "a jar pays 2 to 4 members");
+        // One payment in, one output per member out, nothing else.
+        require(tx.inputs.length == 1, "split one payment at a time");
+        require(tx.outputs.length == members, "one output per member, no extra outputs");
+
+        int pot = tx.inputs[0].value - fee;
+
+        int share0 = pot * bps0 / 10000;
+        require(share0 >= 1000, "share below 1000 sats");
+        require(tx.outputs[0].lockingBytecode == lock0, "output 0 must pay member 1");
+        require(tx.outputs[0].value == share0, "output 0 has the wrong amount");
+        require(tx.outputs[0].tokenCategory == 0x, "no tokens leave the jar");
+
+        if (members == 2) {
+            int last2 = pot - share0;
+            require(last2 >= 1000, "share below 1000 sats");
+            require(tx.outputs[1].lockingBytecode == lock1, "output 1 must pay member 2");
+            require(tx.outputs[1].value == last2, "output 1 has the wrong amount");
+            require(tx.outputs[1].tokenCategory == 0x, "no tokens leave the jar");
+        } else {
+            int share1 = pot * bps1 / 10000;
+            require(share1 >= 1000, "share below 1000 sats");
+            require(tx.outputs[1].lockingBytecode == lock1, "output 1 must pay member 2");
+            require(tx.outputs[1].value == share1, "output 1 has the wrong amount");
+            require(tx.outputs[1].tokenCategory == 0x, "no tokens leave the jar");
+
+            if (members == 3) {
+                int last3 = pot - share0 - share1;
+                require(last3 >= 1000, "share below 1000 sats");
+                require(tx.outputs[2].lockingBytecode == lock2, "output 2 must pay member 3");
+                require(tx.outputs[2].value == last3, "output 2 has the wrong amount");
+                require(tx.outputs[2].tokenCategory == 0x, "no tokens leave the jar");
+            } else {
+                int share2 = pot * bps2 / 10000;
+                require(share2 >= 1000, "share below 1000 sats");
+                require(tx.outputs[2].lockingBytecode == lock2, "output 2 must pay member 3");
+                require(tx.outputs[2].value == share2, "output 2 has the wrong amount");
+                require(tx.outputs[2].tokenCategory == 0x, "no tokens leave the jar");
+
+                int last4 = pot - share0 - share1 - share2;
+                require(last4 >= 1000, "share below 1000 sats");
+                require(tx.outputs[3].lockingBytecode == lock3, "output 3 must pay member 4");
+                require(tx.outputs[3].value == last4, "output 3 has the wrong amount");
+                require(tx.outputs[3].tokenCategory == 0x, "no tokens leave the jar");
+            }
+        }
+    }
+
+    // Join two small payments that are too small to split on their own.
+    // The coins never leave the jar: the only output is the jar itself.
+    function merge() {
+        require(tx.inputs.length == 2, "merge exactly two payments");
+        require(tx.outputs.length == 1, "merge into one output");
+        bytes jar = tx.inputs[this.activeInputIndex].lockingBytecode;
+        require(tx.inputs[0].lockingBytecode == jar, "both inputs come from this jar");
+        require(tx.inputs[1].lockingBytecode == jar, "both inputs come from this jar");
+        require(tx.outputs[0].lockingBytecode == jar, "the merged coin stays in the jar");
+        require(tx.outputs[0].tokenCategory == 0x, "no tokens leave the jar");
+        require(tx.outputs[0].value == tx.inputs[0].value + tx.inputs[1].value - fee, "merged amount must be the sum minus the fee");
+    }
+}

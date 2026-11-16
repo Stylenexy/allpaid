@@ -1,0 +1,40 @@
+{
+  "name": "kencleng",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "One QR for a group. Every Bitcoin Cash payment splits to each member by a covenant, no treasurer.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "compile": "node scripts/compile-contract.mjs",
+    "dev": "npm run compile && vite",
+    "build": "npm run compile && tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "npm run compile && vitest run",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@bitauth/libauth": "3.1.0-next.8",
+    "@wizardconnect/core": "0.2.10",
+    "@wizardconnect/dapp": "0.2.7",
+    "@wizardconnect/react": "0.2.6",
+    "cashscript": "0.14.0",
+    "qrcode": "1.5.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "cashc": "0.14.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  }
+}
