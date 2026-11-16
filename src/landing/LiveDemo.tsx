@@ -135,6 +135,11 @@ export function CheatDemo() {
           <p className="stamp-mark">Refused</p>
           <p className="stamp-who">The Bitcoin Cash VM said:</p>
           <p className="stamp-msg mono">{lastCheat.message}</p>
+          {lastCheat.rule && (
+            <p className="stamp-rule">
+              The rule that caught it{lastCheat.line ? `, Kencleng.cash line ${lastCheat.line}` : ''}: <strong>{lastCheat.rule}</strong>
+            </p>
+          )}
           <p className="stamp-after">Then the honest split went through, and the tin up there paid all three.</p>
         </div>
       ) : (

@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { MockNetworkProvider, TransactionBuilder, randomUtxo, type SpendableUtxo } from 'cashscript';
 import 'cashscript/dist/test/VitestExtensions.js';
-import { buildCheat, buildDistribute, buildMerge, makeContract, outputsOf, type KenclengContract } from '../src/lib/chain';
+import { buildCheat, buildDistribute, buildMerge, explainCheat, makeContract, outputsOf, type KenclengContract } from '../src/lib/chain';
 import { splitPot, minPayment, SPLIT_FEE, type JarConfig, lockingBytecodeOf } from '../src/lib/jar';
 import { sampleAddress } from '../src/lib/sample';
 import { binToHex } from '@bitauth/libauth';
@@ -96,6 +96,8 @@ describe('the contract refuses to be cheated', () => {
       .addInput(utxo, contract.unlock.distribute())
       .addOutput({ to: config.members[0].address, amount: 99_000n });
     expect(builder).toFailRequireWith(/one output per member/);
+    // The page names the contract rule that refused it.
+    expect(explainCheat(contract, config, utxo)).toEqual({ rule: 'one output per member, no extra outputs', line: '32' });
   });
 
   it('refuses an output redirected to someone else, even with the right amount', () => {

@@ -717,6 +717,15 @@
   overflow: auto;
 }
 
+.stamp-rule {
+  margin-top: var(--s-3);
+  color: var(--ink);
+}
+
+.stamp-rule strong {
+  color: var(--refused-ink);
+}
+
 .stamp-after {
   margin-top: var(--s-3);
   color: var(--bch-deep);

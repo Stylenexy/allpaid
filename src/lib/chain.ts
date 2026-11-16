@@ -110,6 +110,25 @@ export function buildCheat(contract: KenclengContract, config: JarConfig, utxo: 
   return finish(builder.build());
 }
 
+/**
+ * After the network refuses the cheat, find which contract line refused it,
+ * by replaying the same transaction in CashScript's debugger.
+ */
+export function explainCheat(contract: KenclengContract, config: JarConfig, utxo: SpendableUtxo): { rule: string; line?: string } | null {
+  const builder = new TransactionBuilder({ provider: contract.provider });
+  builder.addInput(utxo, contract.unlock.distribute());
+  builder.addOutput({ to: config.members[0].address, amount: utxo.satoshis - SPLIT_FEE });
+  try {
+    builder.debug();
+    return null;
+  } catch (error) {
+    const text = errorText(error);
+    const rule = /following message: (.*?)\.?\s*(\n|$)/.exec(text)?.[1];
+    const line = /line (\d+)/.exec(text)?.[1];
+    return rule ? { rule, line } : { rule: text.split('\n')[0] };
+  }
+}
+
 /** Broadcast without any local check, so a refusal comes from the network itself. */
 export async function broadcast(provider: NetworkProvider, tx: BuiltTx): Promise<string> {
   return provider.sendRawTransaction(tx.hex);

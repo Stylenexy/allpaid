@@ -148,6 +148,11 @@ export function CheatPanel({ config, snap, engine }: { config: JarConfig; snap: 
           <p className="stamp-mark">Refused</p>
           <p className="stamp-who">{sandbox ? 'Bitcoin Cash VM (libauth, same rules as a node) said:' : 'The node said:'}</p>
           <p className="stamp-msg mono">{lastCheat.message}</p>
+          {lastCheat.rule && (
+            <p className="stamp-rule">
+              The rule that caught it{lastCheat.line ? `, Kencleng.cash line ${lastCheat.line}` : ''}: <strong>{lastCheat.rule}</strong>
+            </p>
+          )}
         </div>
       )}
     </section>

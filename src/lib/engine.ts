@@ -9,6 +9,7 @@ import {
   buildDistribute,
   buildMerge,
   errorText,
+  explainCheat,
   getProvider,
   isAlreadyKnown,
   isConflict,
@@ -33,6 +34,9 @@ export interface JarEvent {
   ms?: number;
   /** The split was broadcast by another device first. */
   byOther?: boolean;
+  /** For a refused cheat: the contract rule that caught it, and its line in Kencleng.cash. */
+  rule?: string;
+  line?: string;
 }
 
 export type JarStatus = 'connecting' | 'watching' | 'offline';
@@ -248,10 +252,13 @@ export class JarEngine {
       // If this ever happens the contract is broken. Say so loudly.
       this.push({ kind: 'error', txid: tx.txid, message: 'The network accepted the cheat. This should be impossible; please report it.' });
     } catch (error) {
+      const why = explainCheat(this.contract, this.config, utxo);
       this.push({
         kind: 'cheat',
         satoshis: utxo.satoshis,
         message: errorText(error),
+        rule: why?.rule,
+        line: why?.line,
       });
     }
   }

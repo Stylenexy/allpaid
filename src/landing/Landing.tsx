@@ -143,7 +143,7 @@ export function Landing() {
               Say {NIGHT.members[0][0]} wants the whole tip. She builds a transaction that spends the jar's coin and pays only herself. It has
               the right input and a fair-looking fee. It goes straight to the Bitcoin Cash VM, with no check on our side first.
             </p>
-            <p>The refusal below is the VM's own message, from the contract line that caught it.</p>
+            <p>The refusal below is the VM's own message. Under it, the line of the contract that caught the thief.</p>
           </div>
           <Suspense fallback={<div className="cheat-demo is-loading">Loading the play-money network…</div>}>
             <CheatDemo />
