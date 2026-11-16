@@ -8,9 +8,6 @@ export default defineConfig({
     target: 'es2022',
     chunkSizeWarningLimit: 1600,
   },
-  optimizeDeps: {
-    esbuildOptions: { target: 'es2022' },
-  },
   test: {
     include: ['test/**/*.test.ts'],
     environment: 'node',
