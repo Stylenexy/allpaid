@@ -23,7 +23,7 @@ export function WhyBch() {
             </dd>
           </div>
           <div>
-            <dt>Seconds, while the band is still there.</dt>
+            <dt>Seconds, not blocks.</dt>
             <dd>The payment is visible to the network as soon as it is sent, and the split follows right after, without waiting for a block.</dd>
           </div>
         </dl>

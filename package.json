@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "One QR for a group. Every Bitcoin Cash payment splits to each member by a covenant, no treasurer.",
+  "description": "A Bitcoin Cash address that pays a whole team: every payment is split to each member by a covenant.",
   "license": "MIT",
   "engines": {
     "node": ">=22"
@@ -14,7 +14,9 @@
     "build": "npm run compile && tsc -b && vite build",
     "preview": "vite preview",
     "test": "npm run compile && vitest run",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "build:keeper": "npm run compile && vite build --ssr keeper/cli.ts --outDir dist-keeper --emptyOutDir",
+    "keeper": "npm run build:keeper && node dist-keeper/cli.js"
   },
   "dependencies": {
     "@bitauth/libauth": "3.1.0-next.8",
@@ -40,5 +42,8 @@
     "typescript": "5.9.3",
     "vite": "8.3.8",
     "vitest": "5.1.0"
+  },
+  "bin": {
+    "splitjar-keeper": "dist-keeper/cli.js"
   }
 }

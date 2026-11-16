@@ -6,10 +6,10 @@ export function Cta() {
   return (
     <section className="sec cta">
       <div className="wrap cta-in">
-        <h2 className="sec-title">Pass the jar. Nobody has to hold it.</h2>
+        <h2 className="sec-title">One address. The whole team gets paid.</h2>
         <div className="ctas">
           <a className="btn btn-primary" href="/new" onClick={onLinkClick}>
-            Make a jar for your group
+            Make a Splitjar for your team
           </a>
           <a className="btn" href={SITE.demoJarPath || '/try'} onClick={onLinkClick}>
             {SITE.demoJarPath ? 'Pay into our demo jar on mainnet' : 'Open the play-money jar'}

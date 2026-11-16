@@ -1,4 +1,4 @@
-// The Splitjar mark: a tip jar with a coin going into the slot.
+// The Splitjar mark: a jar with a coin going into the slot.
 // Drawn by hand on a 64-unit grid; the same shapes are in public/favicon.svg.
 export function TinMark({ size = 32, title }: { size?: number; title?: string }) {
   return (

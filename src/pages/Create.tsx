@@ -82,6 +82,16 @@ export function Create() {
   const add = () => rows.length < MAX_MEMBERS && setRows((rs) => evenRows([...rs, { name: '', address: '', pct: '' }]));
   const remove = (i: number) => rows.length > MIN_MEMBERS && setRows((rs) => evenRows(rs.filter((_, j) => j !== i)));
 
+  // Testing with real money: two addresses of your own, so the split comes back to you.
+  const useOwnTwo = () => {
+    setName((n) => n || 'My test jar');
+    setRows([
+      { name: 'My wallet A', address: '', pct: '50' },
+      { name: 'My wallet B', address: '', pct: '50' },
+    ]);
+    setTimeout(() => document.getElementById('m0-addr')?.focus(), 0);
+  };
+
   const open = () => {
     setTouched(true);
     if (!valid) return;
@@ -205,6 +215,9 @@ export function Create() {
         </ol>
 
         <div className="rows-foot">
+          <button type="button" className="btn btn-small" onClick={useOwnTwo}>
+            Test with two of my own addresses
+          </button>
           <button type="button" className="btn btn-small" onClick={add} disabled={rows.length >= MAX_MEMBERS}>
             Add a member
           </button>

@@ -15,18 +15,22 @@ export function Hero() {
             Everyone gets paid.
           </h1>
           <p className="hero-lead">
-            Splitjar is a shared tip jar on Bitcoin Cash. Every payment to the group's QR is split to each member's wallet within seconds, in
-            shares fixed by a contract. A member can be another jar, so one payment can pay a whole band and its crew.
+            Splitjar is a Bitcoin Cash address that pays a whole team. Pay it once, and a covenant pays every member their share within
+            seconds. No treasurer, and no way to change the cut. A member can be another team's Splitjar, so money can flow down a whole
+            waterfall: organiser, band, crew.
           </p>
           <div className="ctas">
             <a className="btn btn-primary" href="/new" onClick={onLinkClick}>
-              Make a jar for your group
+              Make a Splitjar for your team
             </a>
             <a className="btn" href="#cheat">
               Try to cheat it
             </a>
           </div>
-          <p className="hero-small">Free and open source. No account. Payers use any Bitcoin Cash wallet, or connect one with WizardConnect.</p>
+          <p className="hero-small">
+            Free and open source. No account. Payers use any Bitcoin Cash wallet, or connect one with WizardConnect. Close the tab and members
+            still get paid: a keeper sends the split.
+          </p>
         </div>
         <Suspense fallback={<div className="demo-card is-loading">Starting the play-money network…</div>}>
           <HeroDemo />

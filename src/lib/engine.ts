@@ -143,13 +143,25 @@ export class JarEngine {
     this.set(patch);
   }
 
+  private async connect() {
+    this.provider = await getProvider(this.config.net);
+    const provider = this.provider;
+    this.nodes = this.tree.map((n) => ({ ...n, contract: makeContract(n.config, provider), min: minPaymentFor(n.config.members) }));
+    if (this.nodes[0].contract.address !== this.snapshot.address) throw new Error('Jar address mismatch');
+    this.set({ status: 'watching', statusMessage: undefined });
+  }
+
+  /** One round, for the keeper: look at every jar in the tree once, split what is waiting, return what happened. */
+  async once(): Promise<JarEvent[]> {
+    if (this.nodes.length === 0) await this.connect();
+    const before = this.snapshot.events.length;
+    await this.tick();
+    return this.snapshot.events.slice(0, this.snapshot.events.length - before).reverse();
+  }
+
   async start() {
     try {
-      this.provider = await getProvider(this.config.net);
-      const provider = this.provider;
-      this.nodes = this.tree.map((n) => ({ ...n, contract: makeContract(n.config, provider), min: minPaymentFor(n.config.members) }));
-      if (this.nodes[0].contract.address !== this.snapshot.address) throw new Error('Jar address mismatch');
-      this.set({ status: 'watching', statusMessage: undefined });
+      await this.connect();
       // Coins already in a jar when the page opens are split too (nobody else did it yet).
       this.loop();
     } catch (error) {

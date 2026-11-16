@@ -1,19 +1,28 @@
 /** Section 7: who it is for. */
 const CASES = [
   {
-    title: 'Street bands and their crew',
-    text: "One QR on the guitar case. Singer 30%, guitar 25%, cajón 20%, and 25% to the road crew's own jar, which splits four ways again.",
+    title: 'Podcasts with several hosts',
+    text: 'One donation address in the show notes. Hosts and the editor get their cut the moment a listener pays, and listeners can check the shares.',
   },
-  { title: 'Warung staff', text: 'A tip QR by the till for the cook, the server and the dishwasher, split the same way every day.' },
-  { title: 'Creators who co-host', text: 'Two hosts and an editor, one donation address on the stream, shares the audience can check.' },
-  { title: 'Event organisers', text: "A festival jar that pays each act's own jar, so every band splits its part again without anyone forwarding money." },
+  {
+    title: 'Restaurant tip pools',
+    text: 'A tip QR on the bill for the whole floor: kitchen, servers, dishwashers. The contract splits the pool, not the manager at closing time.',
+  },
+  {
+    title: 'Team fundraisers',
+    text: 'A campaign run by a team (a FundMe page, a hackathon crew) collects to one address that pays every member their part.',
+  },
+  {
+    title: 'Events and street bands',
+    text: "A festival jar pays each act's jar, and each band splits its part again down to the crew. Where Splitjar started.",
+  },
 ];
 
 export function UseCases() {
   return (
     <section className="sec cases">
       <div className="wrap">
-        <h2 className="sec-title">Made for people who earn together</h2>
+        <h2 className="sec-title">For teams that already get paid in Bitcoin Cash</h2>
         <ul className="case-list">
           {CASES.map((c) => (
             <li key={c.title}>

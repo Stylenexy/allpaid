@@ -1,6 +1,6 @@
 pragma cashscript ^0.14.0;
 
-// Splitjar: a shared tip jar for a group of 2 to 4 people.
+// Splitjar: a Bitcoin Cash address that pays a whole team of 2 to 4 members.
 //
 // Every coin paid to this contract can leave in exactly one way: split between
 // the members, in the shares fixed when the jar was made. There is no owner key.

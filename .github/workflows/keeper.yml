@@ -1,0 +1,27 @@
+name: keeper
+# Sends the split for payments waiting in the jars listed in keeper/jars.txt,
+# so members get paid even when no jar page is open. Holds no keys.
+# Off until the repository variable KEEPER_ENABLED is set to "true"
+# (a 5-minute schedule would use up private-repository Actions minutes).
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: keeper
+  cancel-in-progress: false
+
+jobs:
+  keep:
+    if: ${{ vars.KEEPER_ENABLED == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run keeper -- --file keeper/jars.txt

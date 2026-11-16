@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { decodeJar, encodeJar, levelCount, minPaymentFor, SPLIT_FEE, validateJar, walletCount, type JarConfig } from '../lib/jar';
-import { explorerAddress } from '../lib/chain';
+import { explorerAddress, jarTree } from '../lib/chain';
 import { useJar } from '../hooks/useJar';
 import { Activity, CheatPanel } from '../components/JarParts';
 import { PayPanel } from '../components/PayPanel';
@@ -115,6 +115,15 @@ function JarView({ config }: { config: JarConfig }) {
           </li>
           {nested && (
             <li>
+              Smallest payment each level can split (its fee plus 1,000 sats per wallet, and enough for the level below):{' '}
+              {jarTree(config)
+                .map((n) => `${n.config.name} ${bch(minPaymentFor(n.config.members), 2)} BCH`)
+                .join(' · ')}
+              .
+            </li>
+          )}
+          {nested && (
+            <li>
               A member that is itself a jar is paid like any other member: to its address. This page then splits that jar too, in its own
               transaction with its own {sats(SPLIT_FEE)}-sat fee. One payment here reaches {walletCount(config.members)} wallets over{' '}
               {levelCount(config.members)} levels.
@@ -135,7 +144,9 @@ function JarView({ config }: { config: JarConfig }) {
         </p>
         <p className="hint">
           Source of the contract: <a href={`${SITE.repoUrl}/blob/main/contracts/Splitjar.cash`}>contracts/Splitjar.cash</a>. This page
-          splits automatically while it is open; any copy of the link can do it too, and every copy builds the same transaction.
+          splits within seconds while it is open. With every page closed, the keeper (a small program anyone can run, also scheduled on our
+          repository) sends the split on its next round, every few minutes. Every copy builds the same transaction, so it does not matter who
+          sends it.
         </p>
       </section>
     </main>

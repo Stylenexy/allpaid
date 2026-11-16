@@ -9,3 +9,4 @@ docs/shots/_raw
 
 .vercel
 .env*
+dist-keeper
