@@ -1,0 +1,78 @@
+/*
+ * Kencleng design tokens. Every colour, font and size the app uses is here,
+ * so the look can be changed in one place. Contrast ratios were measured
+ * (WCAG) against the background they sit on; see docs/DESIGN.md.
+ */
+:root {
+  /* Night: the street after dark, where the band plays. Blue-black, not pure black. */
+  --night: #0b1018;
+  --night-1: #111827; /* raised surface (cards) */
+  --night-2: #182234; /* hover, active */
+  --night-3: #202c42; /* overlays */
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.18);
+
+  /* Text on night */
+  --text: #eef2f6;        /* 16.9:1 on --night */
+  --text-soft: #9aa6b8;   /* 7.7:1 on --night, 6.9:1 on --night-1 */
+  --text-faint: #8592a6;  /* 6.0:1 on --night: small print only */
+
+  /* Money and the main action: Bitcoin Cash green. Only for money moving and the one button that moves it. */
+  --bch: #0ac18e;         /* 8.2:1 on --night */
+  --bch-deep: #08704f;    /* green text on paper */
+  --on-bch: #06231a;      /* text on a green button, 7.2:1 */
+  --bch-glow: rgba(10, 193, 142, 0.22);
+
+  /* Brass: the tin itself. Accent for the jar, never for text blocks. */
+  --brass: #c9a227;       /* 7.9:1 on --night */
+  --brass-light: #e3b341;
+  --brass-deep: #8a6418;
+  --brass-shadow: #5e4410;
+
+  /* Paper: receipts and the QR card. */
+  --paper: #f3ebdd;
+  --paper-2: #e9dfcc;
+  --ink: #1b1a17;         /* 14.7:1 on --paper */
+  --ink-soft: #5e584c;    /* 6.0:1 on --paper */
+
+  /* Refused: the stamp the network puts on a cheat. */
+  --refused: #ff6b5e;     /* 6.8:1 on --night */
+  --refused-ink: #b42318; /* 5.6:1 on --paper */
+
+  /* Type */
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Instrument Sans Variable', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-button: 'Avenir Next', Avenir, 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; /* addresses and hashes only */
+
+  /* Type scale, ratio 1.25 */
+  --step--1: 0.875rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.5625rem;
+  --step-3: clamp(1.75rem, 1.4rem + 1.6vw, 2.44rem);
+  --step-4: clamp(2.2rem, 1.6rem + 3vw, 3.4rem);
+  --step-5: clamp(2.6rem, 1.7rem + 4.6vw, 5.2rem);
+
+  /* Space (multiples of 4) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --s-10: 128px;
+
+  /* Radius per level */
+  --r-control: 10px;
+  --r-card: 16px;
+  --r-modal: 20px;
+
+  --shadow-float: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --page: 1180px;
+  --banner-h: 40px;
+}

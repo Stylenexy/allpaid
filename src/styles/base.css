@@ -1,0 +1,215 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 760;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brass-light);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  letter-spacing: 0;
+  word-break: break-all;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.wrap {
+  width: min(100% - 32px, var(--page));
+  margin-inline: auto;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Buttons. One green button per screen: the one that moves money. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: 48px;
+  padding: 0 var(--s-5);
+  border-radius: var(--r-control);
+  border: 1px solid var(--line-strong);
+  background: var(--night-1);
+  color: var(--text);
+  font-family: var(--font-button);
+  font-weight: 650;
+  font-size: var(--step-0);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s var(--ease-out);
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: var(--night-2);
+  border-color: var(--text-faint);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-money {
+  background: var(--bch);
+  border-color: var(--bch);
+  color: var(--on-bch);
+}
+
+.btn-money:hover {
+  background: #22d39f;
+  border-color: #22d39f;
+}
+
+.btn-brass {
+  background: var(--brass);
+  border-color: var(--brass);
+  color: var(--night);
+}
+
+.btn-brass:hover {
+  background: var(--brass-light);
+  border-color: var(--brass-light);
+}
+
+.btn-quiet {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-soft);
+  padding-inline: var(--s-3);
+}
+
+.btn-quiet:hover {
+  color: var(--text);
+  background: var(--night-1);
+  border-color: transparent;
+}
+
+.btn-small {
+  min-height: 36px;
+  padding: 0 var(--s-3);
+  font-size: var(--step--1);
+}
+
+.field {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.field label {
+  font-size: var(--step--1);
+  color: var(--text-soft);
+  font-weight: 560;
+}
+
+.input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-control);
+  border: 1px solid var(--line-strong);
+  background: var(--night);
+  color: var(--text);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--bch);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--refused);
+}
+
+.hint {
+  font-size: var(--step--1);
+  color: var(--text-soft);
+}
+
+.problem {
+  font-size: var(--step--1);
+  color: var(--refused);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
