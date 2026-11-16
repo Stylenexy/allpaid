@@ -85,7 +85,7 @@ export function Activity({ config, snap }: { config: JarConfig; snap: JarSnapsho
               {e.kind === 'split' && e.amounts && (
                 <p className="act-detail num">
                   {e.amounts.map((a, i) => `${config.members[i]?.name} ${sats(a)}`).join(' · ')} sats
-                  {e.ms !== undefined && ` · ${(e.ms / 1000).toFixed(1)} s after it landed`}
+                  {e.ms !== undefined && ` · ${e.ms < 1000 ? `${e.ms} ms` : `${(e.ms / 1000).toFixed(1)} s`} after it landed`}
                   {e.byOther && ' · another device sent the same split first'}
                 </p>
               )}
@@ -139,7 +139,7 @@ export function CheatPanel({ config, snap, engine }: { config: JarConfig; snap: 
           </>
         ) : (
           <button type="button" className="btn" onClick={run} disabled={snap.status !== 'watching'}>
-            {sandbox ? 'Pay 0.001 and let the thief try first' : 'Let the thief try the next payment'}
+            {sandbox ? 'Pay 0.001 BCH and let the thief try first' : 'Let the thief try the next payment'}
           </button>
         )}
       </div>
