@@ -1,43 +1,40 @@
 /*
- * Kencleng design tokens. Every colour, font and size the app uses is here,
- * so the look can be changed in one place. Contrast ratios were measured
- * (WCAG) against the background they sit on; see docs/DESIGN.md.
+ * Splitjar design tokens: the ONLY place colours, fonts, sizes and spacing are set.
+ * Temporary neutral palette (matte black + Bitcoin Cash green + white) until the
+ * visual direction is picked. Swap values here; components only use these names.
+ * Contrast ratios measured with WCAG formula against --bg unless noted.
  */
 :root {
-  /* Night: the street after dark, where the band plays. Blue-black, not pure black. */
-  --night: #0b1018;
-  --night-1: #111827; /* raised surface (cards) */
-  --night-2: #182234; /* hover, active */
-  --night-3: #202c42; /* overlays */
-  --line: rgba(255, 255, 255, 0.09);
-  --line-strong: rgba(255, 255, 255, 0.18);
+  /* Surfaces: matte black, lighter steps for raised elements */
+  --bg: #0d0d0d;
+  --surface-1: #161616; /* cards */
+  --surface-2: #1f1f1f; /* hover, active */
+  --surface-3: #292929; /* overlays */
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.2);
 
-  /* Text on night */
-  --text: #eef2f6;        /* 16.9:1 on --night */
-  --text-soft: #9aa6b8;   /* 7.7:1 on --night, 6.9:1 on --night-1 */
-  --text-faint: #8592a6;  /* 6.0:1 on --night: small print only */
+  /* Text */
+  --text: #f5f5f5;       /* 17.8:1 */
+  --text-soft: #a3a3a3;  /* 7.7:1, 7.2:1 on --surface-1 */
+  --text-faint: #8c8c8c; /* 5.8:1, 5.4:1 on --surface-1 */
 
-  /* Money and the main action: Bitcoin Cash green. Only for money moving and the one button that moves it. */
-  --bch: #0ac18e;         /* 8.2:1 on --night */
-  --bch-deep: #08704f;    /* green text on paper */
-  --on-bch: #06231a;      /* text on a green button, 7.2:1 */
-  --bch-glow: rgba(10, 193, 142, 0.22);
+  /* Money and the action that moves it: Bitcoin Cash green */
+  --money: #0ac18e;      /* 8.4:1, 7.8:1 on --surface-1 */
+  --money-hover: #22d39f;
+  --on-money: #04261b;   /* text on a green button, 7.0:1 */
+  --money-soft: rgba(10, 193, 142, 0.12);
 
-  /* Brass: the tin itself. Accent for the jar, never for text blocks. */
-  --brass: #c9a227;       /* 7.9:1 on --night */
-  --brass-light: #e3b341;
-  --brass-deep: #8a6418;
-  --brass-shadow: #5e4410;
+  /* Secondary action: white */
+  --primary: #f5f5f5;
+  --primary-hover: #ffffff;
+  --on-primary: #0d0d0d;
 
-  /* Paper: receipts and the QR card. */
-  --paper: #f3ebdd;
-  --paper-2: #e9dfcc;
-  --ink: #1b1a17;         /* 14.7:1 on --paper */
-  --ink-soft: #5e584c;    /* 6.0:1 on --paper */
+  /* Refused: what the network stamps on a cheat */
+  --refused: #ff6b5e;    /* 7.0:1, 6.5:1 on --surface-1 */
 
-  /* Refused: the stamp the network puts on a cheat. */
-  --refused: #ff6b5e;     /* 6.8:1 on --night */
-  --refused-ink: #b42318; /* 5.6:1 on --paper */
+  /* QR codes need a light background to scan */
+  --qr-bg: #ffffff;
+  --qr-ink: #0d0d0d;
 
   /* Type */
   --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
@@ -51,8 +48,8 @@
   --step-1: 1.25rem;
   --step-2: 1.5625rem;
   --step-3: clamp(1.75rem, 1.4rem + 1.6vw, 2.44rem);
-  --step-4: clamp(2.2rem, 1.6rem + 3vw, 3.4rem);
-  --step-5: clamp(2.6rem, 1.7rem + 4.6vw, 5.2rem);
+  --step-4: clamp(2.1rem, 1.6rem + 2.6vw, 3.2rem);
+  --step-5: clamp(2.5rem, 1.7rem + 4.2vw, 4.8rem);
 
   /* Space (multiples of 4) */
   --s-1: 4px;
@@ -64,15 +61,13 @@
   --s-7: 48px;
   --s-8: 64px;
   --s-9: 96px;
-  --s-10: 128px;
+  --section: clamp(64px, 6vw + 32px, 112px); /* vertical padding of a landing section */
 
   /* Radius per level */
   --r-control: 10px;
-  --r-card: 16px;
-  --r-modal: 20px;
+  --r-card: 14px;
+  --r-modal: 18px;
 
-  --shadow-float: 0 18px 50px rgba(0, 0, 0, 0.45);
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --page: 1180px;
-  --banner-h: 40px;
 }

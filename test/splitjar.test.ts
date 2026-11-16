@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { MockNetworkProvider, TransactionBuilder, randomUtxo, type SpendableUtxo } from 'cashscript';
 import 'cashscript/dist/test/VitestExtensions.js';
-import { buildCheat, buildDistribute, buildMerge, explainCheat, makeContract, outputsOf, type KenclengContract } from '../src/lib/chain';
+import { buildCheat, buildDistribute, buildMerge, explainCheat, jarTree, makeContract, outputsOf, type SplitjarContract } from '../src/lib/chain';
 import { splitPot, minPayment, SPLIT_FEE, type JarConfig, lockingBytecodeOf } from '../src/lib/jar';
 import { sampleAddress } from '../src/lib/sample';
 import { binToHex } from '@bitauth/libauth';
@@ -19,7 +19,7 @@ beforeEach(() => {
   provider = new MockNetworkProvider();
 });
 
-function fund(contract: KenclengContract, satoshis: bigint): SpendableUtxo {
+function fund(contract: SplitjarContract, satoshis: bigint): SpendableUtxo {
   return provider.addUtxo(contract.address, randomUtxo({ satoshis }));
 }
 
@@ -214,5 +214,81 @@ describe('small payments', () => {
       .addInput(b, contract.unlock.merge())
       .addOutput({ to: contract.address, amount: 6_000n });
     expect(builder).toFailRequireWith(/merged amount must be the sum minus the fee/);
+  });
+});
+
+describe('split trees: a member can be another jar', () => {
+  const crew: JarConfig['members'] = [4000, 2500, 2000, 1500].map((b, i) => ({ name: `crew${i}`, address: sampleAddress(`crew-${i}`), bps: b }));
+  const band: JarConfig = {
+    name: 'Band',
+    net: 'sandbox',
+    members: [
+      { name: 'a', address: sampleAddress('band-a'), bps: 3000 },
+      { name: 'b', address: sampleAddress('band-b'), bps: 2500 },
+      { name: 'c', address: sampleAddress('band-c'), bps: 2000 },
+      { name: 'Crew', address: '', bps: 2500, jar: { name: 'Crew', members: crew } },
+    ],
+  };
+
+  it('pays the nested jar at its P2SH32 address, then the nested jar splits again', async () => {
+    const tree = jarTree(band);
+    expect(tree.map((n) => n.id)).toEqual(['0', '0.3']);
+    const root = makeContract(band, provider);
+    const crewJar = makeContract(tree[1].config, provider);
+    // The band pays the crew jar's own P2SH32 locking bytecode (OP_HASH256 <32 bytes> OP_EQUAL).
+    expect(crewJar.lockingBytecode).toMatch(/^aa20[0-9a-f]{64}87$/);
+
+    const payment = 100_000n;
+    const first = buildDistribute(root, band, fund(root, payment));
+    await provider.sendRawTransaction(first.hex);
+    const outs = outputsOf(first.hex);
+    expect(outs[3].lockingBytecode).toBe(crewJar.lockingBytecode);
+
+    const [crewCoin] = await provider.getUtxos(crewJar.address);
+    expect(crewCoin.satoshis).toBe(splitPot(payment, [3000, 2500, 2000, 2500])[3]);
+    const second = buildDistribute(crewJar, tree[1].config, crewCoin);
+    await provider.sendRawTransaction(second.hex);
+
+    // Seven wallets paid; each level costs exactly one fee.
+    const wallets = [...band.members.slice(0, 3), ...crew];
+    const received = await Promise.all(wallets.map(async (m) => (await provider.getUtxos(m.address)).reduce((s, u) => s + u.satoshis, 0n)));
+    expect(received.every((r) => r >= 1000n)).toBe(true);
+    expect(received.reduce((a, b) => a + b, 0n)).toBe(payment - 2n * SPLIT_FEE);
+    expect(await provider.getUtxos(root.address)).toHaveLength(0);
+    expect(await provider.getUtxos(crewJar.address)).toHaveLength(0);
+  });
+
+  it('refuses to send the nested jar share to a wallet instead', () => {
+    const root = makeContract(band, provider);
+    const utxo = fund(root, 100_000n);
+    const shares = splitPot(100_000n, [3000, 2500, 2000, 2500]);
+    const builder = new TransactionBuilder({ provider }).addInput(utxo, root.unlock.distribute());
+    band.members.forEach((m, i) => builder.addOutput({ to: i === 3 ? thief : m.address, amount: shares[i] }));
+    expect(builder).toFailRequireWith(/output 3 must pay member 4/);
+  });
+
+  it('runs a three-level waterfall: organiser jar, band jar, crew jar', async () => {
+    const festival: JarConfig = {
+      name: 'Festival',
+      net: 'sandbox',
+      members: [
+        { name: 'Organiser', address: sampleAddress('organiser'), bps: 1000 },
+        { name: 'Band', address: '', bps: 9000, jar: { name: 'Band', members: band.members } },
+      ],
+    };
+    const tree = jarTree(festival);
+    expect(tree.map((n) => n.id)).toEqual(['0', '0.1', '0.1.3']);
+    let coin = fund(makeContract(festival, provider), 500_000n);
+    for (const node of tree) {
+      const contract = makeContract(node.config, provider);
+      if (node.id !== '0') [coin] = await provider.getUtxos(contract.address);
+      await provider.sendRawTransaction(buildDistribute(contract, node.config, coin).hex);
+    }
+    const wallets = [sampleAddress('organiser'), ...band.members.slice(0, 3).map((m) => m.address), ...crew.map((m) => m.address)];
+    const total = (await Promise.all(wallets.map(async (a) => (await provider.getUtxos(a)).reduce((s, u) => s + u.satoshis, 0n)))).reduce(
+      (a, b) => a + b,
+      0n,
+    );
+    expect(total).toBe(500_000n - 3n * SPLIT_FEE);
   });
 });

@@ -1,12 +1,12 @@
 pragma cashscript ^0.14.0;
 
-// Kencleng: a shared tip jar for a group of 2 to 4 people.
+// Splitjar: a shared tip jar for a group of 2 to 4 people.
 //
 // Every coin paid to this contract can leave in exactly one way: split between
 // the members, in the shares fixed when the jar was made. There is no owner key.
 // Anyone may trigger the split (the network fee comes out of the jar), and
 // nobody, including the person who triggers it, can change where the money goes.
-contract Kencleng(
+contract Splitjar(
     // Locking bytecode of each member, in payout order. Unused slots are 0x.
     bytes lock0,
     bytes lock1,

@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
-import { decodeJar, encodeJar, minPayment, SPLIT_FEE, validateJar, type JarConfig } from '../lib/jar';
+import { decodeJar, encodeJar, levelCount, minPaymentFor, SPLIT_FEE, validateJar, walletCount, type JarConfig } from '../lib/jar';
 import { explorerAddress } from '../lib/chain';
 import { useJar } from '../hooks/useJar';
-import { Activity, CheatPanel, MemberCards } from '../components/JarParts';
+import { Activity, CheatPanel } from '../components/JarParts';
 import { PayPanel } from '../components/PayPanel';
-import { TinStage } from '../components/TinStage';
+import { SplitTree } from '../components/SplitTree';
 import { bch, percent, sats } from '../lib/format';
 import { onLinkClick } from '../router';
 import { SAMPLE_BAND } from '../lib/sample';
@@ -27,7 +27,7 @@ export function JarRoute({ code, sandbox }: { code?: string; sandbox?: boolean }
           {config ? problems[0].message : 'The link is cut short or was changed. Ask whoever shared it to send the whole link again.'}
         </p>
         <p className="page-actions">
-          <a className="btn btn-brass" href="/new" onClick={onLinkClick}>
+          <a className="btn btn-primary" href="/new" onClick={onLinkClick}>
             Make a new jar
           </a>
           <a className="btn" href="/try" onClick={onLinkClick}>
@@ -46,7 +46,7 @@ function JarView({ config }: { config: JarConfig }) {
   const shareLink = `${location.origin}/jar#${encodeJar(config)}`;
   const share = async () => {
     try {
-      if (navigator.share) await navigator.share({ title: `${config.name} on Kencleng`, url: shareLink });
+      if (navigator.share) await navigator.share({ title: `${config.name} on Splitjar`, url: shareLink });
       else {
         await navigator.clipboard.writeText(shareLink);
         setShared(true);
@@ -57,7 +57,7 @@ function JarView({ config }: { config: JarConfig }) {
     }
   };
   const addrLink = explorerAddress(config.net, address);
-  const bps = config.members.map((m) => m.bps);
+  const nested = config.members.some((m) => m.jar);
 
   return (
     <main className="jar wrap">
@@ -67,7 +67,7 @@ function JarView({ config }: { config: JarConfig }) {
           <h1 className="jar-name">{config.name}</h1>
           <p className="jar-sub">
             {config.members.length} members ·{' '}
-            {config.members.map((m) => `${m.name} ${percent(m.bps)}`).join(', ')}
+            {config.members.map((m) => `${m.name}${m.jar ? ' (jar)' : ''} ${percent(m.bps)}`).join(', ')}
           </p>
         </div>
         <div className="jar-head-actions">
@@ -86,9 +86,8 @@ function JarView({ config }: { config: JarConfig }) {
       <div className="jar-grid">
         <PayPanel config={config} snap={snap} engine={engine} />
         <div className="jar-side">
-          <TinStage config={config} snap={snap} compact />
           <h2 className="side-title">Who gets what</h2>
-          <MemberCards config={config} snap={snap} />
+          <SplitTree config={config} snap={snap} />
           <h2 className="side-title">What happened</h2>
           <Activity config={config} snap={snap} />
         </div>
@@ -110,9 +109,17 @@ function JarView({ config }: { config: JarConfig }) {
             anyone can press split without a wallet. Nobody can take more.
           </li>
           <li>
-            The smallest payment it can split is <span className="num">{bch(minPayment(bps), 2)}</span> BCH (every member gets at least
-            1,000 sats). Smaller payments wait in the jar until two of them can be joined.
+            The smallest payment it can split is <span className="num">{bch(minPaymentFor(config.members), 2)}</span> BCH (every wallet
+            gets at least 1,000 sats{nested ? ', and every nested jar gets enough to split again' : ''}). Smaller payments wait in the jar until
+            two of them can be joined.
           </li>
+          {nested && (
+            <li>
+              A member that is itself a jar is paid like any other member: to its address. This page then splits that jar too, in its own
+              transaction with its own {sats(SPLIT_FEE)}-sat fee. One payment here reaches {walletCount(config.members)} wallets over{' '}
+              {levelCount(config.members)} levels.
+            </li>
+          )}
           <li>There is no owner key. The shares are part of the address itself: change one share and you get a different jar.</li>
         </ul>
         <p className="rules-addr">
@@ -127,7 +134,7 @@ function JarView({ config }: { config: JarConfig }) {
           )}
         </p>
         <p className="hint">
-          Source of the contract: <a href={`${SITE.repoUrl}/blob/main/contracts/Kencleng.cash`}>contracts/Kencleng.cash</a>. This page
+          Source of the contract: <a href={`${SITE.repoUrl}/blob/main/contracts/Splitjar.cash`}>contracts/Splitjar.cash</a>. This page
           splits automatically while it is open; any copy of the link can do it too, and every copy builds the same transaction.
         </p>
       </section>

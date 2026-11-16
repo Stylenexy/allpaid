@@ -1,61 +1,12 @@
-// Pieces of the jar page: member cards, the activity feed and the cheat scene.
+// Pieces of the jar page: the activity feed and the cheat scene.
 import type { JarConfig } from '../lib/jar';
 import type { JarEngine, JarEvent, JarSnapshot } from '../lib/engine';
-import { explorerTx } from '../lib/chain';
-import { bch, percent, sats, shortAddress, shortHash } from '../lib/format';
-
-export function MemberCards({ config, snap }: { config: JarConfig; snap: JarSnapshot }) {
-  const last = snap.lastSplit;
-  const link = last?.txid ? explorerTx(config.net, last.txid) : null;
-  return (
-    <ol className="members" aria-label="Members and their shares">
-      {config.members.map((m, i) => {
-        const got = last?.amounts?.[i];
-        return (
-          <li
-            key={`${i}-${snap.splitCount}`}
-            className={`member ${got ? 'is-paid' : ''}`}
-            style={{ animationDelay: `${i * 170}ms` }}
-          >
-            <div className="member-top">
-              <span className="member-name">{m.name}</span>
-              <span className="member-share num">{percent(m.bps)}</span>
-            </div>
-            <div className="member-bar" aria-hidden="true">
-              <span style={{ width: `${m.bps / 100}%` }} />
-            </div>
-            <p className="member-got num" aria-live="polite">
-              {got ? (
-                <>
-                  <span className="member-plus">+{bch(got)} BCH</span>
-                  {link ? (
-                    <a href={link} target="_blank" rel="noreferrer" className="member-link">
-                      see it on the explorer
-                    </a>
-                  ) : (
-                    <span className="member-link">checked by the VM</span>
-                  )}
-                </>
-              ) : (
-                <span className="member-wait">Waiting for the next payment</span>
-              )}
-            </p>
-            <p className="member-meta">
-              <span className="mono" title={m.address}>
-                {shortAddress(m.address)}
-              </span>
-              {snap.totals[i] > 0n && <span className="num"> · {bch(snap.totals[i])} BCH since you opened this page</span>}
-            </p>
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
+import { explorerTx, jarTree } from '../lib/chain';
+import { bch, sats, shortHash } from '../lib/format';
 
 const LABEL: Record<JarEvent['kind'], string> = {
-  in: 'Payment landed in the jar',
-  split: 'Split to every member',
+  in: 'Payment landed',
+  split: 'Split',
   merge: 'Small payments joined',
   cheat: 'Cheat refused by the network',
   hold: 'Held in the jar',
@@ -70,21 +21,24 @@ export function Activity({ config, snap }: { config: JarConfig; snap: JarSnapsho
       </div>
     );
   }
+  const names = new Map(jarTree(config).map((n) => [n.id, n.config.members.map((m) => m.name)]));
   return (
     <ol className="activity" aria-label="Jar activity" aria-live="polite">
       {snap.events.map((e) => {
         const link = e.txid ? explorerTx(config.net, e.txid) : null;
+        const members = names.get(e.node) ?? [];
         return (
-          <li key={e.id} className={`act act-${e.kind}`}>
+          <li key={e.id} className={`act act-${e.kind} ${e.depth > 0 ? 'act-nested' : ''}`}>
             <span className="act-dot" aria-hidden="true" />
             <div className="act-body">
               <p className="act-title">
                 {LABEL[e.kind]}
+                {(e.kind === 'split' || e.kind === 'in') && <span> · {e.jarName}</span>}
                 {e.satoshis !== undefined && <span className="num"> · {bch(e.satoshis)} BCH</span>}
               </p>
               {e.kind === 'split' && e.amounts && (
                 <p className="act-detail num">
-                  {e.amounts.map((a, i) => `${config.members[i]?.name} ${sats(a)}`).join(' · ')} sats
+                  {e.amounts.map((a, i) => `${members[i] ?? `#${i + 1}`} ${sats(a)}`).join(' · ')} sats
                   {e.ms !== undefined && ` · ${e.ms < 1000 ? `${e.ms} ms` : `${(e.ms / 1000).toFixed(1)} s`} after it landed`}
                   {e.byOther && ' · another device sent the same split first'}
                 </p>
@@ -109,6 +63,23 @@ export function Activity({ config, snap }: { config: JarConfig; snap: JarSnapsho
   );
 }
 
+/** The refusal, as the network or the VM reported it, plus the contract rule that caught it. */
+export function Refusal({ event, sandbox, after }: { event: JarEvent; sandbox: boolean; after?: string }) {
+  return (
+    <div className="refusal" role="status">
+      <p className="refusal-mark">Refused</p>
+      <p className="refusal-who">{sandbox ? 'The Bitcoin Cash VM (libauth, same rules as a node) said:' : 'The node said:'}</p>
+      <p className="refusal-msg mono">{event.message}</p>
+      {event.rule && (
+        <p className="refusal-rule">
+          The rule that caught it{event.line ? `, Splitjar.cash line ${event.line}` : ''}: <strong>{event.rule}</strong>
+        </p>
+      )}
+      {after && <p className="refusal-after">{after}</p>}
+    </div>
+  );
+}
+
 export function CheatPanel({ config, snap, engine }: { config: JarConfig; snap: JarSnapshot; engine: JarEngine }) {
   const lastCheat = snap.events.find((e) => e.kind === 'cheat');
   const sandbox = config.net === 'sandbox';
@@ -123,9 +94,8 @@ export function CheatPanel({ config, snap, engine }: { config: JarConfig; snap: 
         Try to cheat
       </h2>
       <p className="cheat-text">
-        The thief gets the first shot at the next payment: a transaction that spends the jar's coin and sends all of it to {first}, the
-        one who used to hold the tin. It is broadcast to the {sandbox ? 'in-browser Bitcoin Cash VM' : 'network'} as is, with no check
-        on our side. Then the honest split runs.
+        The thief gets the first shot at the next payment: a transaction that spends the jar's coin and sends all of it to {first}. It is
+        broadcast to the {sandbox ? 'in-browser Bitcoin Cash VM' : 'network'} as is, with no check on our side. Then the honest split runs.
       </p>
       <div className="cheat-row">
         {snap.cheatArmed ? (
@@ -143,18 +113,7 @@ export function CheatPanel({ config, snap, engine }: { config: JarConfig; snap: 
           </button>
         )}
       </div>
-      {lastCheat && (
-        <div className="stamp" role="status">
-          <p className="stamp-mark">Refused</p>
-          <p className="stamp-who">{sandbox ? 'Bitcoin Cash VM (libauth, same rules as a node) said:' : 'The node said:'}</p>
-          <p className="stamp-msg mono">{lastCheat.message}</p>
-          {lastCheat.rule && (
-            <p className="stamp-rule">
-              The rule that caught it{lastCheat.line ? `, Kencleng.cash line ${lastCheat.line}` : ''}: <strong>{lastCheat.rule}</strong>
-            </p>
-          )}
-        </div>
-      )}
+      {lastCheat && <Refusal event={lastCheat} sandbox={sandbox} key={lastCheat.id} />}
     </section>
   );
 }

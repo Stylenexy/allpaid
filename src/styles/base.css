@@ -13,7 +13,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--night);
+  background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--step-0);
@@ -56,7 +56,7 @@ select {
 }
 
 :focus-visible {
-  outline: 2px solid var(--brass-light);
+  outline: 2px solid var(--text);
   outline-offset: 3px;
   border-radius: 6px;
 }
@@ -96,7 +96,7 @@ select {
   padding: 0 var(--s-5);
   border-radius: var(--r-control);
   border: 1px solid var(--line-strong);
-  background: var(--night-1);
+  background: var(--surface-1);
   color: var(--text);
   font-family: var(--font-button);
   font-weight: 650;
@@ -108,7 +108,7 @@ select {
 }
 
 .btn:hover {
-  background: var(--night-2);
+  background: var(--surface-2);
   border-color: var(--text-faint);
 }
 
@@ -122,25 +122,25 @@ select {
 }
 
 .btn-money {
-  background: var(--bch);
-  border-color: var(--bch);
-  color: var(--on-bch);
+  background: var(--money);
+  border-color: var(--money);
+  color: var(--on-money);
 }
 
 .btn-money:hover {
-  background: #22d39f;
-  border-color: #22d39f;
+  background: var(--money-hover);
+  border-color: var(--money-hover);
 }
 
-.btn-brass {
-  background: var(--brass);
-  border-color: var(--brass);
-  color: var(--night);
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
 }
 
-.btn-brass:hover {
-  background: var(--brass-light);
-  border-color: var(--brass-light);
+.btn-primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 .btn-quiet {
@@ -152,7 +152,7 @@ select {
 
 .btn-quiet:hover {
   color: var(--text);
-  background: var(--night-1);
+  background: var(--surface-1);
   border-color: transparent;
 }
 
@@ -179,12 +179,12 @@ select {
   padding: 0 var(--s-3);
   border-radius: var(--r-control);
   border: 1px solid var(--line-strong);
-  background: var(--night);
+  background: var(--bg);
   color: var(--text);
 }
 
 .input:focus-visible {
-  outline: 2px solid var(--bch);
+  outline: 2px solid var(--money);
   outline-offset: 0;
   border-color: transparent;
 }

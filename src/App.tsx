@@ -7,11 +7,11 @@ const Create = lazy(() => import('./pages/Create').then((m) => ({ default: m.Cre
 const JarRoute = lazy(() => import('./pages/JarPage').then((m) => ({ default: m.JarRoute })));
 
 const TITLES = {
-  home: 'Kencleng: one QR, everyone gets paid',
-  new: 'Make a jar · Kencleng',
-  jar: 'Jar · Kencleng',
-  try: 'Play-money jar · Kencleng',
-  missing: 'Not found · Kencleng',
+  home: 'Splitjar: one QR, everyone gets paid',
+  new: 'Make a jar · Splitjar',
+  jar: 'Jar · Splitjar',
+  try: 'Play-money jar · Splitjar',
+  missing: 'Not found · Splitjar',
 } as const;
 
 export function App() {
@@ -34,7 +34,7 @@ export function App() {
             <h1 className="page-title">Nothing at this address</h1>
             <p className="lead">The page you asked for does not exist.</p>
             <p className="page-actions">
-              <a className="btn btn-brass" href="/" onClick={onLinkClick}>
+              <a className="btn btn-primary" href="/" onClick={onLinkClick}>
                 Back to the start
               </a>
             </p>

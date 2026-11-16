@@ -1,7 +1,8 @@
-// The jar watcher. It polls the jar address, and the moment a payment lands it
-// builds the split transaction and broadcasts it. Any device with the jar link
-// can run this; because the split is deterministic, every device would
-// broadcast the exact same transaction.
+// The jar watcher. It polls every jar in the split tree, and the moment a
+// payment lands it builds the split transaction and broadcasts it. When a split
+// pays a nested jar, the watcher splits that jar too, right away, spending the
+// coin it just created. Any device with the jar link can run this; because each
+// split is deterministic, every device would broadcast the exact same transactions.
 import type { NetworkProvider, SpendableUtxo } from 'cashscript';
 import {
   broadcast,
@@ -13,11 +14,14 @@ import {
   getProvider,
   isAlreadyKnown,
   isConflict,
+  jarTree,
   makeContract,
   sandboxPay,
-  type KenclengContract,
+  type JarNode,
+  type SplitjarContract,
 } from './chain';
-import { minPayment, splitPot, type JarConfig } from './jar';
+import { lockingBytecodeOf, minPaymentFor, splitPot, type JarConfig } from './jar';
+import { binToHex } from '@bitauth/libauth';
 
 export type JarEventKind = 'in' | 'split' | 'merge' | 'cheat' | 'hold' | 'error';
 
@@ -25,6 +29,10 @@ export interface JarEvent {
   id: string;
   kind: JarEventKind;
   at: number;
+  /** Which jar in the tree: "0" is the root. */
+  node: string;
+  jarName: string;
+  depth: number;
   satoshis?: bigint;
   txid?: string;
   /** For a split: what each member received, in member order. */
@@ -34,7 +42,7 @@ export interface JarEvent {
   ms?: number;
   /** The split was broadcast by another device first. */
   byOther?: boolean;
-  /** For a refused cheat: the contract rule that caught it, and its line in Kencleng.cash. */
+  /** For a refused cheat: the contract rule that caught it, and its line in Splitjar.cash. */
   rule?: string;
   line?: string;
 }
@@ -46,14 +54,22 @@ export interface JarSnapshot {
   statusMessage?: string;
   address: string;
   events: JarEvent[];
-  /** What each member received while this page was open. */
+  /** What each member of the root jar received while this page was open. */
   totals: bigint[];
-  /** Increments on every split; the member cards use it to light up. */
+  /** Increments on every split anywhere in the tree; cards use it to light up. */
   splitCount: number;
+  /** Last split of the root jar. */
   lastSplit?: JarEvent;
+  /** Last split of each jar in the tree, by node id. */
+  lastSplits: Record<string, JarEvent>;
   cheatArmed: boolean;
   autoSplit: boolean;
   waiting: number;
+}
+
+interface LiveNode extends JarNode {
+  contract: SplitjarContract;
+  min: bigint;
 }
 
 const key = (u: SpendableUtxo) => `${u.txid}:${u.vout}`;
@@ -62,7 +78,7 @@ export class JarEngine {
   private listeners = new Set<() => void>();
   private snapshot: JarSnapshot;
   private provider?: NetworkProvider;
-  private contract?: KenclengContract;
+  private nodes: LiveNode[] = [];
   private seen = new Map<string, number>();
   private handled = new Set<string>();
   private retries = new Map<string, number>();
@@ -70,11 +86,16 @@ export class JarEngine {
   private timer?: ReturnType<typeof setTimeout>;
   private stopped = false;
   private failures = 0;
+  readonly tree: JarNode[];
   readonly min: bigint;
   readonly pollMs: number;
 
-  constructor(readonly config: JarConfig, address: string) {
-    this.min = minPayment(config.members.map((m) => m.bps));
+  constructor(
+    readonly config: JarConfig,
+    address: string,
+  ) {
+    this.tree = jarTree(config);
+    this.min = minPaymentFor(config.members);
     this.pollMs = config.net === 'sandbox' ? 250 : 1500;
     this.snapshot = {
       status: 'connecting',
@@ -82,6 +103,7 @@ export class JarEngine {
       events: [],
       totals: config.members.map(() => 0n),
       splitCount: 0,
+      lastSplits: {},
       cheatArmed: false,
       autoSplit: true,
       waiting: 0,
@@ -100,13 +122,23 @@ export class JarEngine {
     this.listeners.forEach((l) => l());
   }
 
-  private push(event: Omit<JarEvent, 'id' | 'at'>) {
-    const full: JarEvent = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, at: Date.now(), ...event };
-    const patch: Partial<JarSnapshot> = { events: [full, ...this.snapshot.events].slice(0, 40) };
+  private push(node: JarNode, event: Omit<JarEvent, 'id' | 'at' | 'node' | 'jarName' | 'depth'>) {
+    const full: JarEvent = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      at: Date.now(),
+      node: node.id,
+      jarName: node.config.name,
+      depth: node.depth,
+      ...event,
+    };
+    const patch: Partial<JarSnapshot> = { events: [full, ...this.snapshot.events].slice(0, 60) };
     if (full.kind === 'split' && full.amounts) {
-      patch.totals = this.snapshot.totals.map((t, i) => t + (full.amounts![i] ?? 0n));
       patch.splitCount = this.snapshot.splitCount + 1;
-      patch.lastSplit = full;
+      patch.lastSplits = { ...this.snapshot.lastSplits, [node.id]: full };
+      if (node.id === '0') {
+        patch.totals = this.snapshot.totals.map((t, i) => t + (full.amounts![i] ?? 0n));
+        patch.lastSplit = full;
+      }
     }
     this.set(patch);
   }
@@ -114,10 +146,11 @@ export class JarEngine {
   async start() {
     try {
       this.provider = await getProvider(this.config.net);
-      this.contract = makeContract(this.config, this.provider);
-      if (this.contract.address !== this.snapshot.address) throw new Error('Jar address mismatch');
+      const provider = this.provider;
+      this.nodes = this.tree.map((n) => ({ ...n, contract: makeContract(n.config, provider), min: minPaymentFor(n.config.members) }));
+      if (this.nodes[0].contract.address !== this.snapshot.address) throw new Error('Jar address mismatch');
       this.set({ status: 'watching', statusMessage: undefined });
-      // Coins already in the jar when the page opens are split too (nobody else did it yet).
+      // Coins already in a jar when the page opens are split too (nobody else did it yet).
       this.loop();
     } catch (error) {
       this.set({ status: 'offline', statusMessage: errorText(error) });
@@ -135,7 +168,7 @@ export class JarEngine {
     if (on) this.tick();
   }
 
-  /** The next payment is first offered to a thief. The network has to refuse it. */
+  /** The next payment into the root jar is first offered to a thief. The network has to refuse it. */
   armCheat() {
     this.set({ cheatArmed: true });
   }
@@ -158,39 +191,42 @@ export class JarEngine {
   };
 
   async tick() {
-    if (this.busy || !this.contract) return;
+    if (this.busy || this.nodes.length === 0) return;
     this.busy = true;
     try {
-      const utxos = (await this.contract.getUtxos()).filter((u) => !u.token);
-      this.failures = 0;
-      if (this.snapshot.status !== 'watching') this.set({ status: 'watching', statusMessage: undefined });
-      for (const u of utxos) {
-        if (!this.seen.has(key(u))) {
-          this.seen.set(key(u), performance.now());
-          this.push({ kind: 'in', satoshis: u.satoshis, txid: u.txid });
+      let waiting = 0;
+      for (const node of this.nodes) {
+        const utxos = (await node.contract.getUtxos()).filter((u) => !u.token);
+        for (const u of utxos) {
+          if (!this.seen.has(key(u))) {
+            this.seen.set(key(u), performance.now());
+            // Coins a parent split sends to a nested jar are marked seen by that split, so only outside payments show here.
+            this.push(node, { kind: 'in', satoshis: u.satoshis, txid: u.txid });
+          }
+        }
+        const open = utxos.filter((u) => !this.handled.has(key(u)));
+        waiting += open.length;
+        if (!this.snapshot.autoSplit) continue;
+        const small: SpendableUtxo[] = [];
+        for (const u of open) {
+          if (node.depth === 0 && this.snapshot.cheatArmed) await this.tryCheat(node, u);
+          if (u.satoshis >= node.min) await this.split(node, u);
+          else small.push(u);
+        }
+        if (small.length >= 2) {
+          await this.merge(node, small[0], small[1]);
+        } else if (small.length === 1 && !this.handled.has(`hold:${key(small[0])}`)) {
+          this.handled.add(`hold:${key(small[0])}`);
+          this.push(node, {
+            kind: 'hold',
+            satoshis: small[0].satoshis,
+            message: `Too small to split (the minimum is ${node.min} sats). It waits in the jar for the next small payment.`,
+          });
         }
       }
-      const open = utxos.filter((u) => !this.handled.has(key(u)));
-      this.set({ waiting: open.length });
-      if (!this.snapshot.autoSplit) return;
-
-      const small: SpendableUtxo[] = [];
-      for (const u of open) {
-        if (this.snapshot.cheatArmed) await this.tryCheat(u);
-        if (u.satoshis >= this.min) await this.split(u);
-        else small.push(u);
-      }
-      if (small.length >= 2) {
-        await this.merge(small[0], small[1]);
-      } else if (small.length === 1 && !this.handled.has(`hold:${key(small[0])}`)) {
-        this.handled.add(`hold:${key(small[0])}`);
-        this.push({
-          kind: 'hold',
-          satoshis: small[0].satoshis,
-          message: `Too small to split (the minimum is ${this.min} sats). It waits in the jar for the next small payment.`,
-        });
-      }
-      this.set({ waiting: utxos.filter((u) => !this.handled.has(key(u))).length });
+      this.failures = 0;
+      if (this.snapshot.status !== 'watching') this.set({ status: 'watching', statusMessage: undefined });
+      this.set({ waiting });
     } catch (error) {
       this.failures += 1;
       if (this.failures >= 3) this.set({ status: 'offline', statusMessage: errorText(error) });
@@ -199,67 +235,76 @@ export class JarEngine {
     }
   }
 
-  /** Split one payment. Safe to call from many devices at once. */
-  async split(utxo: SpendableUtxo) {
-    if (!this.contract || !this.provider) return;
-    const amounts = splitPot(utxo.satoshis, this.config.members.map((m) => m.bps));
-    const tx = buildDistribute(this.contract, this.config, utxo);
+  /** Split one payment, then any nested jar it paid. Safe to call from many devices at once. */
+  async split(node: LiveNode, utxo: SpendableUtxo) {
+    if (!this.provider || this.handled.has(key(utxo))) return;
+    const amounts = splitPot(
+      utxo.satoshis,
+      node.config.members.map((m) => m.bps),
+    );
+    const tx = buildDistribute(node.contract, node.config, utxo);
     const seenAt = this.seen.get(key(utxo)) ?? performance.now();
+    let ok = false;
     try {
       await broadcast(this.provider, tx);
       this.handled.add(key(utxo));
-      this.push({ kind: 'split', satoshis: utxo.satoshis, txid: tx.txid, amounts, ms: Math.round(performance.now() - seenAt) });
+      this.push(node, { kind: 'split', satoshis: utxo.satoshis, txid: tx.txid, amounts, ms: Math.round(performance.now() - seenAt) });
+      ok = true;
     } catch (error) {
       if (isAlreadyKnown(error) || isConflict(error)) {
         // Another device sent the same split first. Same coin, same rules, same txid.
         this.handled.add(key(utxo));
-        this.push({ kind: 'split', satoshis: utxo.satoshis, txid: tx.txid, amounts, byOther: true });
-        return;
+        this.push(node, { kind: 'split', satoshis: utxo.satoshis, txid: tx.txid, amounts, byOther: true });
+        ok = true;
+      } else {
+        // Unknown failure (server hiccup, relay policy). Try again on the next ticks, then give up loudly.
+        const tries = (this.retries.get(key(utxo)) ?? 0) + 1;
+        this.retries.set(key(utxo), tries);
+        if (tries >= 3) {
+          this.handled.add(key(utxo));
+          this.push(node, { kind: 'error', satoshis: utxo.satoshis, message: `Split failed: ${errorText(error)}` });
+        }
       }
-      // Unknown failure (server hiccup, relay policy). Try again on the next ticks, then give up loudly.
-      const tries = (this.retries.get(key(utxo)) ?? 0) + 1;
-      this.retries.set(key(utxo), tries);
-      if (tries >= 3) {
-        this.handled.add(key(utxo));
-        this.push({ kind: 'error', satoshis: utxo.satoshis, message: `Split failed: ${errorText(error)}` });
-      }
+    }
+    if (!ok) return;
+    // Cascade: split each nested jar this transaction just paid, spending the new coin directly.
+    for (const child of this.nodes.filter((n) => n.parent === node.id && n.slot !== undefined)) {
+      const lock = lockingBytecodeOf(child.address);
+      if (typeof lock === 'string') continue;
+      const coin: SpendableUtxo = { txid: tx.txid, vout: child.slot!, satoshis: amounts[child.slot!], lockingBytecode: binToHex(lock) };
+      if (!this.seen.has(key(coin))) this.seen.set(key(coin), performance.now());
+      if (coin.satoshis >= child.min) await this.split(child, coin);
     }
   }
 
-  private async merge(a: SpendableUtxo, b: SpendableUtxo) {
-    if (!this.contract || !this.provider) return;
-    const tx = buildMerge(this.contract, a, b);
+  private async merge(node: LiveNode, a: SpendableUtxo, b: SpendableUtxo) {
+    if (!this.provider) return;
+    const tx = buildMerge(node.contract, a, b);
     try {
       await broadcast(this.provider, tx);
       this.handled.add(key(a));
       this.handled.add(key(b));
-      this.push({ kind: 'merge', satoshis: a.satoshis + b.satoshis, txid: tx.txid, message: 'Two small payments joined inside the jar.' });
+      this.push(node, { kind: 'merge', satoshis: a.satoshis + b.satoshis, txid: tx.txid, message: 'Two small payments joined inside the jar.' });
     } catch (error) {
       this.handled.add(key(a));
       this.handled.add(key(b));
       if (!isAlreadyKnown(error) && !isConflict(error)) {
-        this.push({ kind: 'error', message: `Merge failed: ${errorText(error)}` });
+        this.push(node, { kind: 'error', message: `Merge failed: ${errorText(error)}` });
       }
     }
   }
 
-  private async tryCheat(utxo: SpendableUtxo) {
-    if (!this.contract || !this.provider) return;
+  private async tryCheat(node: LiveNode, utxo: SpendableUtxo) {
+    if (!this.provider) return;
     this.set({ cheatArmed: false });
-    const tx = buildCheat(this.contract, this.config, utxo);
+    const tx = buildCheat(node.contract, node.config, utxo);
     try {
       await broadcast(this.provider, tx);
       // If this ever happens the contract is broken. Say so loudly.
-      this.push({ kind: 'error', txid: tx.txid, message: 'The network accepted the cheat. This should be impossible; please report it.' });
+      this.push(node, { kind: 'error', txid: tx.txid, message: 'The network accepted the cheat. This should be impossible; please report it.' });
     } catch (error) {
-      const why = explainCheat(this.contract, this.config, utxo);
-      this.push({
-        kind: 'cheat',
-        satoshis: utxo.satoshis,
-        message: errorText(error),
-        rule: why?.rule,
-        line: why?.line,
-      });
+      const why = explainCheat(node.contract, node.config, utxo);
+      this.push(node, { kind: 'cheat', satoshis: utxo.satoshis, message: errorText(error), rule: why?.rule, line: why?.line });
     }
   }
 }

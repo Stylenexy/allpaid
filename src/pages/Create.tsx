@@ -1,13 +1,32 @@
 import { useMemo, useState } from 'react';
-import { encodeJar, minPayment, MAX_MEMBERS, MIN_MEMBERS, TOTAL_BPS, validateJar, type JarConfig, type Net } from '../lib/jar';
+import {
+  decodeJar,
+  encodeJar,
+  jarCodeFromLink,
+  levelCount,
+  minPaymentFor,
+  MAX_DEPTH,
+  MAX_MEMBERS,
+  MIN_MEMBERS,
+  TOTAL_BPS,
+  validateJar,
+  walletCount,
+  type JarConfig,
+  type Net,
+  type SubJar,
+} from '../lib/jar';
 import { jarAddress } from '../lib/chain';
 import { bch } from '../lib/format';
 import { navigate, onLinkClick } from '../router';
 
 interface Row {
   name: string;
+  /** What the user typed: a wallet address, or the link of another jar. */
   address: string;
   pct: string;
+  /** Set when the address field holds a jar link: this member is a nested jar. */
+  jar?: SubJar;
+  linkProblem?: string;
 }
 
 const evenRows = (rows: Row[]): Row[] => {
@@ -32,7 +51,13 @@ export function Create() {
   const [touched, setTouched] = useState(false);
 
   const config: JarConfig = useMemo(
-    () => ({ name, net, members: rows.map((r) => ({ name: r.name, address: r.address.trim(), bps: toBps(r.pct) })) }),
+    () => ({
+      name,
+      net,
+      members: rows.map((r) =>
+        r.jar ? { name: r.name, address: '', bps: toBps(r.pct), jar: r.jar } : { name: r.name, address: r.address.trim(), bps: toBps(r.pct) },
+      ),
+    }),
     [name, net, rows],
   );
   const problems = useMemo(() => validateJar(config), [config]);
@@ -42,6 +67,18 @@ export function Create() {
   const problemFor = (field: string) => (touched ? problems.find((p) => p.field === field)?.message : undefined);
 
   const update = (i: number, patch: Partial<Row>) => setRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  // A pasted jar link turns the member into a nested jar.
+  const setAddress = (i: number, text: string) => {
+    const code = jarCodeFromLink(text);
+    if (!code) return update(i, { address: text, jar: undefined, linkProblem: undefined });
+    const child = decodeJar(code);
+    if (!child) return update(i, { address: text, jar: undefined, linkProblem: 'This jar link does not open. Copy the whole link again.' });
+    if (child.net !== net) return update(i, { address: text, jar: undefined, linkProblem: `That jar is on ${child.net}; this one is on ${net}.` });
+    if (levelCount(child.members) >= MAX_DEPTH) {
+      return update(i, { address: text, jar: undefined, linkProblem: `That jar already splits over ${MAX_DEPTH - 1} levels. ${MAX_DEPTH} levels at most.` });
+    }
+    setRows((rs) => rs.map((r, j) => (j === i ? { ...r, address: text, name: r.name || child.name, jar: { name: child.name, members: child.members }, linkProblem: undefined } : r)));
+  };
   const add = () => rows.length < MAX_MEMBERS && setRows((rs) => evenRows([...rs, { name: '', address: '', pct: '' }]));
   const remove = (i: number) => rows.length > MIN_MEMBERS && setRows((rs) => evenRows(rs.filter((_, j) => j !== i)));
 
@@ -57,7 +94,7 @@ export function Create() {
       <h1 className="page-title">Make a jar for your group</h1>
       <p className="lead">
         Write down who is in the group and how the money splits. That is the whole setup: the jar's address is computed from it, right here,
-        and no server keeps a copy. Share the link you get at the end.
+        and no server keeps a copy. To nest a jar (say, your crew's), make that jar first, then paste its link as a member here.
       </p>
 
       <form
@@ -120,16 +157,16 @@ export function Create() {
                 />
               </div>
               <div className="field row-addr">
-                <label htmlFor={`m${i}-addr`}>Payout address</label>
+                <label htmlFor={`m${i}-addr`}>Payout address, or another jar's link</label>
                 <input
                   id={`m${i}-addr`}
                   className="input mono"
                   value={r.address}
-                  placeholder={`${prefix}q…`}
+                  placeholder={`${prefix}q…  or  https://…/jar#…`}
                   spellCheck={false}
                   autoCapitalize="off"
                   autoCorrect="off"
-                  onChange={(e) => update(i, { address: e.target.value })}
+                  onChange={(e) => setAddress(i, e.target.value)}
                   aria-invalid={!!problemFor(`m${i}.address`)}
                 />
               </div>
@@ -153,6 +190,13 @@ export function Create() {
               >
                 Remove
               </button>
+              {r.jar && (
+                <p className="row-nested">
+                  Nested jar: {r.jar.name}, {r.jar.members.length} members ({r.jar.members.map((m) => m.name).join(', ')}). It splits again when
+                  this jar pays it.
+                </p>
+              )}
+              {r.linkProblem && <p className="problem row-problem">{r.linkProblem}</p>}
               {(problemFor(`m${i}.name`) || problemFor(`m${i}.address`) || problemFor(`m${i}.bps`)) && (
                 <p className="problem row-problem">{problemFor(`m${i}.name`) ?? problemFor(`m${i}.address`) ?? problemFor(`m${i}.bps`)}</p>
               )}
@@ -180,8 +224,8 @@ export function Create() {
               <p className="preview-label">Your jar's address</p>
               <p className="mono preview-addr">{address}</p>
               <p className="hint">
-                Computed from the names' addresses and shares. Payments of at least {bch(minPayment(config.members.map((m) => m.bps)), 2)} BCH
-                split on their own.
+                Computed from the members' addresses and shares. Payments of at least {bch(minPaymentFor(config.members), 2)} BCH split on
+                their own{levelCount(config.members) > 1 ? `, over ${levelCount(config.members)} levels to ${walletCount(config.members)} wallets` : ''}.
               </p>
             </>
           ) : (
@@ -190,7 +234,7 @@ export function Create() {
         </div>
 
         <div className="create-actions">
-          <button type="submit" className="btn btn-brass">
+          <button type="submit" className="btn btn-primary">
             Open the jar
           </button>
           <a className="btn btn-quiet" href="/try" onClick={onLinkClick}>

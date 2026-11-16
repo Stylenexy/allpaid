@@ -9,16 +9,16 @@ import { errorText, explorerTx, getProvider } from '../lib/chain';
 import { payWithWallet, scanWallet, type WalletScan } from '../lib/wallet';
 import { QR } from './QR';
 
-const CHIPS = [50_000n, 100_000n, 500_000n];
+const CHIPS = [50_000n, 100_000n, 500_000n, 1_000_000n];
 
 export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: JarSnapshot; engine: JarEngine }) {
-  const options = CHIPS.filter((c) => c >= engine.min);
+  const options = CHIPS.filter((c) => c >= engine.min).slice(0, 3);
   const [amount, setAmount] = useState<bigint>(options[1] ?? options[0] ?? engine.min);
   const [custom, setCustom] = useState('');
   const customSats = custom ? parseBch(custom) : null;
   const chosen = customSats ?? amount;
   const tooSmall = chosen < engine.min;
-  const uri = `${snap.address}?amount=${bip21Amount(chosen)}&message=${encodeURIComponent(`Kencleng: ${config.name}`)}`;
+  const uri = `${snap.address}?amount=${bip21Amount(chosen)}&message=${encodeURIComponent(`Splitjar: ${config.name}`)}`;
   const sandbox = config.net === 'sandbox';
   const [copied, setCopied] = useState(false);
 
@@ -35,7 +35,7 @@ export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: Ja
   return (
     <section className="pay" aria-labelledby="pay-title">
       <h2 id="pay-title" className="pay-title">
-        {sandbox ? 'Drop play money into the tin' : `Pay ${config.name}`}
+        {sandbox ? 'Pay play money into the jar' : `Pay ${config.name}`}
       </h2>
 
       <div className="chips" role="radiogroup" aria-label="Amount">
@@ -75,7 +75,7 @@ export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: Ja
             disabled={tooSmall || snap.status !== 'watching'}
             onClick={() => engine.simulatePayment(chosen)}
           >
-            Drop {bch(chosen)} BCH into the tin
+            Pay {bch(chosen)} BCH into the jar
           </button>
           <p className="hint">
             Play money in a network that lives in this tab. The split is still built by the real contract and checked by the Bitcoin Cash VM.
@@ -83,10 +83,10 @@ export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: Ja
         </div>
       ) : (
         <>
-          <div className="pay-paper">
+          <div className="qr-card">
             <QR value={uri} label={`QR code: pay ${bch(chosen)} BCH to the ${config.name} jar`} size={236} />
-            <p className="pay-amount num">{bch(chosen)} BCH</p>
-            <p className="pay-address mono">{snap.address}</p>
+            <p className="qr-amount num">{bch(chosen)} BCH</p>
+            <p className="qr-address mono">{snap.address}</p>
           </div>
           <WizardPay config={config} jarAddress={snap.address} amount={chosen} disabled={tooSmall} />
           <div className="pay-row">
@@ -114,7 +114,7 @@ type PayState =
 
 function WizardPay({ config, jarAddress, amount, disabled }: { config: JarConfig; jarAddress: string; amount: bigint; disabled: boolean }) {
   const icon = useMemo(() => `${location.origin}/icon-192.png`, []);
-  const wc = useWizardConnect({ dappName: 'Kencleng', dappIcon: icon, sessionKey: 'kencleng-wizardconnect' });
+  const wc = useWizardConnect({ dappName: 'Splitjar', dappIcon: icon, sessionKey: 'splitjar-wizardconnect' });
   const [pay, setPay] = useState<PayState>({ step: 'idle' });
   const abort = useRef<AbortController | null>(null);
 
@@ -150,7 +150,7 @@ function WizardPay({ config, jarAddress, amount, disabled }: { config: JarConfig
         scan,
         jarAddress,
         amount,
-        prompt: `Pay ${bch(amount)} BCH into the "${config.name}" Kencleng jar`,
+        prompt: `Pay ${bch(amount)} BCH into the "${config.name}" Splitjar jar`,
         signal: abort.current.signal,
       });
       const fresh = await scanWallet(wc.manager, config.net, provider).catch(() => scan);
@@ -231,17 +231,17 @@ function WizardPay({ config, jarAddress, amount, disabled }: { config: JarConfig
           title="Connect a wallet"
           subtitle="Scan this with a wallet that supports WizardConnect, or copy the link into a desktop wallet."
           theme={{
-            backdropColor: 'rgba(5, 8, 14, 0.72)',
-            dialogBackground: '#111827',
-            headerBackground: '#111827',
-            titleColor: '#eef2f6',
-            subtitleColor: '#9aa6b8',
-            qrForeground: '#1b1a17',
-            qrBackground: '#f3ebdd',
-            uriRowBackground: '#0b1018',
-            uriTextColor: '#9aa6b8',
+            backdropColor: 'rgba(0, 0, 0, 0.72)',
+            dialogBackground: '#161616',
+            headerBackground: '#161616',
+            titleColor: '#f5f5f5',
+            subtitleColor: '#a3a3a3',
+            qrForeground: '#0d0d0d',
+            qrBackground: '#ffffff',
+            uriRowBackground: '#0d0d0d',
+            uriTextColor: '#a3a3a3',
             borderColor: 'rgba(255,255,255,0.18)',
-            closeButtonColor: '#9aa6b8',
+            closeButtonColor: '#a3a3a3',
             copyButtonColor: '#0ac18e',
             qrSize: 260,
           }}

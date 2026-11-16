@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decodeJar, encodeJar, splitPot, validateJar, type JarConfig } from '../src/lib/jar';
+import { decodeJar, encodeJar, jarCodeFromLink, levelCount, minPaymentFor, splitPot, validateJar, walletCount, type JarConfig } from '../src/lib/jar';
 import { jarAddress } from '../src/lib/chain';
 import { sampleAddress, SAMPLE_BAND } from '../src/lib/sample';
 
@@ -71,5 +71,39 @@ describe('split arithmetic', () => {
       const shares = splitPot(payment, bps);
       expect(shares.reduce((a, b) => a + b, 0n)).toBe(payment - 1000n);
     }
+  });
+});
+
+describe('nested jars', () => {
+  const crew = { name: 'Crew', members: [{ name: 'Dewi', address: sampleAddress('dewi', 'bitcoincash'), bps: 6000 }, { name: 'Eko', address: sampleAddress('eko', 'bitcoincash'), bps: 4000 }] };
+  const band: JarConfig = { ...mainnetJar, members: [{ ...mainnetJar.members[0], bps: 7000 }, { name: 'Crew', address: '', bps: 3000, jar: crew }] };
+
+  it('survives the URL round trip and keeps its address', () => {
+    const again = decodeJar(encodeJar(band))!;
+    expect(again).toEqual(band);
+    expect(jarAddress(again)).toBe(jarAddress(band));
+    expect(validateJar(band)).toEqual([]);
+  });
+
+  it('counts wallets and levels, and raises the minimum so the nested jar can split again', () => {
+    expect(walletCount(band.members)).toBe(3);
+    expect(levelCount(band.members)).toBe(2);
+    const min = minPaymentFor(band.members);
+    const [, crewShare] = splitPot(min, [7000, 3000]);
+    expect(crewShare).toBeGreaterThanOrEqual(minPaymentFor(crew.members));
+    expect(min).toBeGreaterThan(minPaymentFor(mainnetJar.members));
+  });
+
+  it('allows three levels and refuses a fourth', () => {
+    const level3: JarConfig = { ...band, members: [{ ...band.members[0] }, { name: 'Band', address: '', bps: 3000, jar: { name: 'Band', members: band.members } }] };
+    expect(validateJar(level3)).toEqual([]);
+    const level4: JarConfig = { ...band, members: [{ ...band.members[0] }, { name: 'Deep', address: '', bps: 3000, jar: { name: 'Deep', members: level3.members } }] };
+    expect(validateJar(level4).some((p) => p.message.includes('too deep'))).toBe(true);
+  });
+
+  it('reads a jar link pasted as a member', () => {
+    const code = encodeJar(band);
+    expect(jarCodeFromLink(`https://splitjar.example/jar#${code}`)).toBe(code);
+    expect(jarCodeFromLink('bitcoincash:qq123')).toBeNull();
   });
 });

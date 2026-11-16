@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 
-/** A QR code as inline SVG, dark modules on paper so every phone camera reads it. */
+/** A QR code as inline SVG, dark modules on white so every phone camera reads it. */
 export function QR({ value, label, size = 240 }: { value: string; label: string; size?: number }) {
   const [svg, setSvg] = useState('');
   useEffect(() => {
     let alive = true;
-    QRCode.toString(value, { type: 'svg', margin: 1, errorCorrectionLevel: 'M', color: { dark: '#1b1a17', light: '#00000000' } })
+    QRCode.toString(value, { type: 'svg', margin: 1, errorCorrectionLevel: 'M', color: { dark: '#0d0d0d', light: '#00000000' } })
       .then((s) => alive && setSvg(s))
       .catch(() => alive && setSvg(''));
     return () => {

@@ -10,10 +10,10 @@ import {
   type Utxo,
 } from 'cashscript';
 import { binToHex, decodeTransaction, hashTransaction, hexToBin } from '@bitauth/libauth';
-import artifact from '../contract/kencleng.artifact';
-import { contractArgs, splitPot, SPLIT_FEE, type JarConfig, type Net, lockingBytecodeOf } from './jar';
+import artifact from '../contract/splitjar.artifact';
+import { contractArgs, splitPot, subConfig, SPLIT_FEE, type JarConfig, type Member, type Net, lockingBytecodeOf } from './jar';
 
-export type KenclengContract = Contract<typeof artifact>;
+export type SplitjarContract = Contract<typeof artifact>;
 
 const ELECTRUM_HOSTS: Record<Exclude<Net, 'sandbox'>, string[]> = {
   mainnet: ['bch.imaginary.cash', 'electroncash.de', 'bch.loping.net'],
@@ -46,13 +46,51 @@ export async function getProvider(net: Net): Promise<NetworkProvider> {
   throw new Error(`No Electrum server answered for ${net}. ${errorText(lastError)}`);
 }
 
-export function makeContract(config: JarConfig, provider: NetworkProvider): KenclengContract {
-  return new Contract(artifact, contractArgs(config), { provider, contractType: 'p2sh32' });
+export function makeContract(config: JarConfig, provider: NetworkProvider): SplitjarContract {
+  return new Contract(artifact, contractArgs(resolveJar(config)), { provider, contractType: 'p2sh32' });
 }
 
 /** The contract address without needing a network connection. */
 export function jarAddress(config: JarConfig): string {
   return makeContract(config, offlineProvider(config.net)).address;
+}
+
+/**
+ * Fill in the address of every nested jar (its own contract address), deepest
+ * first. A nested jar is paid like any other member: to its locking bytecode.
+ */
+export function resolveJar(config: JarConfig): JarConfig {
+  if (!config.members.some((m) => m.jar)) return config;
+  const members: Member[] = config.members.map((m) => {
+    if (!m.jar) return m;
+    const child = resolveJar(subConfig(config, m));
+    return { ...m, address: jarAddress(child), jar: { name: child.name, members: child.members } };
+  });
+  return { ...config, members };
+}
+
+/** One jar in a split tree. The root is "0"; its third member's jar is "0.2". */
+export interface JarNode {
+  id: string;
+  config: JarConfig;
+  address: string;
+  parent?: string;
+  /** Position of this jar among its parent's members. */
+  slot?: number;
+  depth: number;
+}
+
+export function jarTree(config: JarConfig): JarNode[] {
+  const nodes: JarNode[] = [];
+  const walk = (c: JarConfig, id: string, depth: number, parent?: string, slot?: number) => {
+    const resolved = resolveJar(c);
+    nodes.push({ id, config: resolved, address: jarAddress(resolved), parent, slot, depth });
+    resolved.members.forEach((m, i) => {
+      if (m.jar) walk(subConfig(resolved, m), `${id}.${i}`, depth + 1, id, i);
+    });
+  };
+  walk(config, '0', 0);
+  return nodes;
 }
 
 const offline = new Map<Net, NetworkProvider>();
@@ -82,7 +120,8 @@ function finish(hex: string): BuiltTx {
  * The honest split. Fully determined by the coin it spends: every device that
  * builds it gets the same transaction and the same txid.
  */
-export function buildDistribute(contract: KenclengContract, config: JarConfig, utxo: SpendableUtxo): BuiltTx {
+export function buildDistribute(contract: SplitjarContract, jar: JarConfig, utxo: SpendableUtxo): BuiltTx {
+  const config = resolveJar(jar);
   const shares = splitPot(utxo.satoshis, config.members.map((m) => m.bps), SPLIT_FEE);
   const builder = new TransactionBuilder({ provider: contract.provider });
   builder.addInput(utxo, contract.unlock.distribute());
@@ -91,7 +130,7 @@ export function buildDistribute(contract: KenclengContract, config: JarConfig, u
 }
 
 /** Join two coins that are each too small to split. They stay in the jar. */
-export function buildMerge(contract: KenclengContract, a: SpendableUtxo, b: SpendableUtxo): BuiltTx {
+export function buildMerge(contract: SplitjarContract, a: SpendableUtxo, b: SpendableUtxo): BuiltTx {
   const builder = new TransactionBuilder({ provider: contract.provider });
   builder.addInput(a, contract.unlock.merge());
   builder.addInput(b, contract.unlock.merge());
@@ -103,10 +142,10 @@ export function buildMerge(contract: KenclengContract, a: SpendableUtxo, b: Spen
  * The cheat: same coin, same unlock, but the whole pot goes to member 1
  * (the one who would have held the tin). The network must refuse it.
  */
-export function buildCheat(contract: KenclengContract, config: JarConfig, utxo: SpendableUtxo): BuiltTx {
+export function buildCheat(contract: SplitjarContract, config: JarConfig, utxo: SpendableUtxo): BuiltTx {
   const builder = new TransactionBuilder({ provider: contract.provider });
   builder.addInput(utxo, contract.unlock.distribute());
-  builder.addOutput({ to: config.members[0].address, amount: utxo.satoshis - SPLIT_FEE });
+  builder.addOutput({ to: resolveJar(config).members[0].address, amount: utxo.satoshis - SPLIT_FEE });
   return finish(builder.build());
 }
 
@@ -114,10 +153,10 @@ export function buildCheat(contract: KenclengContract, config: JarConfig, utxo: 
  * After the network refuses the cheat, find which contract line refused it,
  * by replaying the same transaction in CashScript's debugger.
  */
-export function explainCheat(contract: KenclengContract, config: JarConfig, utxo: SpendableUtxo): { rule: string; line?: string } | null {
+export function explainCheat(contract: SplitjarContract, config: JarConfig, utxo: SpendableUtxo): { rule: string; line?: string } | null {
   const builder = new TransactionBuilder({ provider: contract.provider });
   builder.addInput(utxo, contract.unlock.distribute());
-  builder.addOutput({ to: config.members[0].address, amount: utxo.satoshis - SPLIT_FEE });
+  builder.addOutput({ to: resolveJar(config).members[0].address, amount: utxo.satoshis - SPLIT_FEE });
   try {
     builder.debug();
     return null;

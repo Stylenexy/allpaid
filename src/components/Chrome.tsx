@@ -49,7 +49,7 @@ export function Nav({ current }: { current?: 'home' | 'new' | 'try' | 'jar' }) {
   return (
     <header className="nav">
       <div className="nav-in wrap">
-        <a href="/" onClick={onLinkClick} className="nav-home" aria-label="Kencleng home">
+        <a href="/" onClick={onLinkClick} className="nav-home" aria-label="Splitjar home">
           <Logo />
         </a>
         <nav className="nav-links" aria-label="Main">
@@ -59,7 +59,7 @@ export function Nav({ current }: { current?: 'home' | 'new' | 'try' | 'jar' }) {
           <a href="/try" onClick={onLinkClick} className={`nav-link ${current === 'try' ? 'is-on' : ''}`}>
             Try with play money
           </a>
-          <a href="/new" onClick={onLinkClick} className={`btn btn-brass btn-small ${current === 'new' ? 'is-on' : ''}`}>
+          <a href="/new" onClick={onLinkClick} className={`btn btn-primary btn-small ${current === 'new' ? 'is-on' : ''}`}>
             Make a jar
           </a>
         </nav>
@@ -74,7 +74,7 @@ export function Footer() {
       <div className="wrap footer-in">
         <div className="footer-cols">
           <p className="footer-line">
-            Kencleng is open source (MIT). The contract has no owner key and has not been audited: use small amounts.
+            Splitjar is open source (MIT). The contract has no owner key and has not been audited: use small amounts.
           </p>
           <nav className="footer-links" aria-label="Footer">
             <a href="/new" onClick={onLinkClick}>
@@ -92,7 +92,7 @@ export function Footer() {
           </nav>
         </div>
         <p className="footer-word" aria-hidden="true">
-          kencleng
+          splitjar
         </p>
       </div>
     </footer>
