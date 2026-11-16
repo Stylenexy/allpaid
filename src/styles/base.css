@@ -213,3 +213,12 @@ select {
     scroll-behavior: auto !important;
   }
 }
+
+@media (max-width: 480px) {
+  .btn {
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    padding-block: var(--s-2);
+  }
+}

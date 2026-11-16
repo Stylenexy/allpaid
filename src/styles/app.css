@@ -708,6 +708,7 @@
 }
 
 .refusal-msg {
+  overflow-wrap: anywhere;
   font-size: 0.8rem;
   white-space: pre-wrap;
   max-height: 200px;
