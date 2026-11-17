@@ -60,6 +60,16 @@ function JarView({ config }: { config: JarConfig }) {
   useRise(page);
   const { engine, snap, address } = useJar(config);
   const [shared, setShared] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard blocked */
+    }
+  };
   const shareLink = `${location.origin}/jar#${encodeJar(config)}`;
   const share = async () => {
     try {
@@ -126,60 +136,83 @@ function JarView({ config }: { config: JarConfig }) {
 
         <CheatPanel config={config} snap={snap} engine={engine} />
 
-        <section className="rules v3a-rules" aria-labelledby="rules-title" data-rise>
-          <h2 id="rules-title" className="rules-title v3a-h2">
-            What this jar's contract enforces
-          </h2>
-          <div className="v3a-rules-body">
-            <ul className="rules-list">
-              <li>
-                Every payment leaves in one transaction with exactly {config.members.length} outputs, one per member, in the shares above. The last
-                member takes the rounding remainder, so no satoshi is lost.
-              </li>
-              <li>
-                The network fee is fixed at <span className="num">{sats(SPLIT_FEE)}</span> sats per split and comes out of the payment, so
-                anyone can press split without a wallet. Nobody can take more.
-              </li>
-              <li>
-                The smallest payment it can split is <span className="num">{bch(minPaymentFor(config.members), 2)}</span> BCH (every wallet
-                gets at least 1,000 sats{nested ? ', and every nested jar gets enough to split again' : ''}). Smaller payments wait in the jar until
-                two of them can be joined.
-              </li>
-              {nested && (
-                <li>
-                  Smallest payment each level can split (its fee plus 1,000 sats per wallet, and enough for the level below):{' '}
-                  {jarTree(config)
-                    .map((n) => `${n.config.name} ${bch(minPaymentFor(n.config.members), 2)} BCH`)
-                    .join(' · ')}
-                  .
-                </li>
-              )}
-              {nested && (
-                <li>
-                  A member that is itself a jar is paid like any other member: to its address. This page then splits that jar too, in its own
-                  transaction with its own {sats(SPLIT_FEE)}-sat fee. One payment here reaches {walletCount(config.members)} wallets over{' '}
-                  {levelCount(config.members)} levels.
-                </li>
-              )}
-              <li>There is no owner key. The shares are part of the address itself: change one share and you get a different jar.</li>
-            </ul>
-            <p className="rules-addr">
-              Jar address: <span className="mono">{address}</span>
-              {addrLink && (
-                <>
-                  {' '}
-                  <a href={addrLink} target="_blank" rel="noreferrer">
-                    open on the explorer
-                  </a>
-                </>
-              )}
-            </p>
+        <section className="rules v3a-rules" aria-labelledby="rules-title">
+          <div className="v3a-rules-head" data-rise>
+            <h2 id="rules-title" className="rules-title v3a-h2">
+              What this jar's contract enforces
+            </h2>
             <p className="hint">
-              Source of the contract: <a href={`${SITE.repoUrl}/blob/main/contracts/Allpaid.cash`}>contracts/Allpaid.cash</a>. This page
-              splits within seconds while it is open. With every page closed, anyone can run the keeper (<code>npm run keeper -- &lt;jar link&gt;</code>), a small program that
-              sends the split for waiting payments. Every copy builds the same transaction, so it does not matter who
-              sends it.
+              Source: <a href={`${SITE.repoUrl}/blob/main/contracts/Allpaid.cash`}>contracts/Allpaid.cash</a>. This page splits within seconds while it
+              is open. With every page closed, anyone can run the keeper (<code>npm run keeper -- &lt;jar link&gt;</code>). Every copy builds the same
+              transaction, so it does not matter who sends it.
             </p>
+          </div>
+          <dl className="v3a-terms">
+            <div className="v3a-term" data-rise>
+              <dt>
+                <span className="v3a-term-fig num">{config.members.length}</span>
+                <span className="v3a-term-unit">outputs per payment</span>
+              </dt>
+              <dd>One transaction, one output per member, in the shares above. The last member takes the rounding remainder, so no satoshi is lost.</dd>
+            </div>
+            <div className="v3a-term" data-rise>
+              <dt>
+                <span className="v3a-term-fig num">{sats(SPLIT_FEE)}</span>
+                <span className="v3a-term-unit">sats fee per split</span>
+              </dt>
+              <dd>Fixed, and paid from the payment, so anyone can press split without a wallet. Nobody can take more.</dd>
+            </div>
+            <div className="v3a-term" data-rise>
+              <dt>
+                <span className="v3a-term-fig num">{sats(minPaymentFor(config.members))}</span>
+                <span className="v3a-term-unit">sats smallest payment</span>
+              </dt>
+              <dd>
+                {bch(minPaymentFor(config.members), 2)} BCH: every wallet gets at least 1,000 sats{nested ? ', and every nested jar enough to split again' : ''}.
+                Smaller payments wait in the jar until two of them can be joined.
+                {nested && (
+                  <span className="v3a-term-note">
+                    Per level:{' '}
+                    {jarTree(config)
+                      .map((n) => `${n.config.name} ${bch(minPaymentFor(n.config.members), 2)} BCH`)
+                      .join(' · ')}
+                  </span>
+                )}
+              </dd>
+            </div>
+            {nested && (
+              <div className="v3a-term" data-rise>
+                <dt>
+                  <span className="v3a-term-fig num">{walletCount(config.members)}</span>
+                  <span className="v3a-term-unit">wallets over {levelCount(config.members)} levels</span>
+                </dt>
+                <dd>
+                  A member that is itself a jar is paid to its address like any other member. This page then splits that jar too, in its own transaction
+                  with its own {sats(SPLIT_FEE)}-sat fee.
+                </dd>
+              </div>
+            )}
+            <div className="v3a-term" data-rise>
+              <dt>
+                <span className="v3a-term-fig num">0</span>
+                <span className="v3a-term-unit">owner keys</span>
+              </dt>
+              <dd>The shares are part of the address itself. Change one share and you get a different jar.</dd>
+            </div>
+          </dl>
+          <div className="v3a-addr" data-rise>
+            <p className="v3a-addr-label">Jar address</p>
+            <p className="v3a-addr-value mono">{address}</p>
+            <div className="v3a-addr-actions">
+              <button type="button" className="v3-pill v3a-pill--quiet v3a-pill--sm" onClick={copyAddress}>
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+              {addrLink && (
+                <a className="v3-pill v3a-pill--quiet v3a-pill--sm" href={addrLink} target="_blank" rel="noreferrer">
+                  Explorer <span aria-hidden="true">↗</span>
+                </a>
+              )}
+            </div>
           </div>
         </section>
       </div>

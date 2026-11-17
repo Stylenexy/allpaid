@@ -68,32 +68,25 @@ export function Nav({ current, variant }: { current?: 'home' | 'new' | 'try' | '
   );
 }
 
+/**
+ * Inner pages end on one quiet line (Stripe Checkout's footer): who made it, the
+ * one safety note, the source. The nav above already holds every way onward.
+ */
 export function Footer() {
   return (
     <footer className="footer">
       <div className="wrap footer-in">
-        <div className="footer-cols">
-          <p className="footer-line">
-            Allpaid is open source (MIT). The contract has no owner key and has not been audited: use small amounts.
-          </p>
-          <nav className="footer-links" aria-label="Footer">
-            <a href="/new" onClick={onLinkClick}>
-              Make a jar
-            </a>
-            <a href="/try" onClick={onLinkClick}>
-              Play-money jar
-            </a>
-            <a href={SITE.repoUrl} target="_blank" rel="noreferrer">
-              Source and README
-            </a>
-            <a href={`${SITE.repoUrl}#credits--prior-work`} target="_blank" rel="noreferrer">
-              Credits
-            </a>
-          </nav>
-        </div>
-        <p className="footer-word" aria-hidden="true">
-          Allpaid
+        <p className="footer-line">
+          <strong>Allpaid</strong> is open source (MIT). The contract has no owner key and has not been audited: use small amounts.
         </p>
+        <nav className="footer-links" aria-label="Footer">
+          <a href={SITE.repoUrl} target="_blank" rel="noreferrer">
+            Source and README
+          </a>
+          <a href={`${SITE.repoUrl}#credits--prior-work`} target="_blank" rel="noreferrer">
+            Credits
+          </a>
+        </nav>
       </div>
     </footer>
   );

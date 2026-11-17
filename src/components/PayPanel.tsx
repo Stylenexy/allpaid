@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useWizardConnect } from '@wizardconnect/react';
 import { WALLET_THEME, WalletDialog } from './WalletDialog';
-import type { JarConfig } from '../lib/jar';
+import { splitPot, SPLIT_FEE, type JarConfig } from '../lib/jar';
 import type { JarEngine, JarSnapshot } from '../lib/engine';
-import { bch, bip21Amount, parseBch } from '../lib/format';
+import { bch, bip21Amount, parseBch, sats } from '../lib/format';
 import { errorText, explorerTx, getProvider } from '../lib/chain';
 import { payWithWallet, scanWallet, type WalletScan } from '../lib/wallet';
 import { QR } from './QR';
@@ -23,11 +23,13 @@ function goToCheat() {
 
 export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: JarSnapshot; engine: JarEngine }) {
   const options = CHIPS.filter((c) => c >= engine.min).slice(0, 3);
-  const [amount, setAmount] = useState<bigint>(options[1] ?? options[0] ?? engine.min);
-  const [custom, setCustom] = useState('');
-  const customSats = custom ? parseBch(custom) : null;
-  const chosen = customSats ?? amount;
+  // One amount, typed straight into the big number (Uniswap); the presets only fill it in.
+  const [text, setText] = useState(() => bch(options[1] ?? options[0] ?? engine.min));
+  const parsed = parseBch(text);
+  const chosen = parsed ?? 0n;
   const tooSmall = chosen < engine.min;
+  // Where the payment goes, before it is paid (Wise): the fixed fee, then each member's part.
+  const parts = tooSmall ? null : splitPot(chosen, config.members.map((m) => m.bps), SPLIT_FEE);
   const uri = `${snap.address}?amount=${bip21Amount(chosen)}&message=${encodeURIComponent(`Allpaid: ${config.name}`)}`;
   const sandbox = config.net === 'sandbox';
   const [copied, setCopied] = useState(false);
@@ -48,33 +50,76 @@ export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: Ja
         {sandbox ? 'Pay play money into the jar' : `Pay ${config.name}`}
       </h2>
 
-      <div className="chips" role="radiogroup" aria-label="Amount">
+      {/* The amount is the field: read out large, edited in place. */}
+      <div className={`v3a-amount ${text !== '' && (parsed === null || tooSmall) ? 'is-off' : ''}`}>
+        <label className="v3a-amount-label" htmlFor="pay-amount">
+          You pay
+        </label>
+        <div className={`v3a-amount-field ${text.length > 9 ? 'is-xlong' : text.length > 6 ? 'is-long' : ''}`}>
+          {/* The hidden twin sizes the field to its text, so the unit sits right after the number. */}
+          <span className="v3a-amount-box">
+            <span className="v3a-amount-twin" aria-hidden="true">
+              {text || '0'}
+            </span>
+            <input
+              id="pay-amount"
+              className="v3a-amount-input num"
+              size={1}
+              inputMode="decimal"
+              autoComplete="off"
+              spellCheck={false}
+              value={text}
+              placeholder="0"
+              onChange={(e) => setText(e.target.value)}
+              aria-invalid={text !== '' && (parsed === null || tooSmall)}
+              aria-describedby="pay-amount-sats"
+            />
+          </span>
+          <span className="v3a-amount-unit" aria-hidden="true">
+            BCH
+          </span>
+        </div>
+        <p id="pay-amount-sats" className="v3a-amount-sub num">
+          {parsed !== null ? `${sats(chosen)} sats` : 'Type an amount in BCH'}
+        </p>
+      </div>
+
+      <div className="chips" role="radiogroup" aria-label="Quick amounts">
         {options.map((c) => (
           <button
             key={String(c)}
             type="button"
             role="radio"
-            aria-checked={!customSats && amount === c}
-            className={`chip num ${!customSats && amount === c ? 'is-on' : ''}`}
-            onClick={() => {
-              setAmount(c);
-              setCustom('');
-            }}
+            aria-checked={parsed === c}
+            className={`chip num ${parsed === c ? 'is-on' : ''}`}
+            onClick={() => setText(bch(c))}
           >
-            {bch(c)} BCH
+            {bch(c)}
           </button>
         ))}
-        <label className="chip chip-input">
-          <span className="visually-hidden">Other amount in BCH</span>
-          <input
-            aria-label="Other amount in BCH"
-            inputMode="decimal"
-            placeholder="other"
-            value={custom}
-            onChange={(e) => setCustom(e.target.value)}
-            aria-invalid={custom !== '' && (customSats === null || tooSmall)}
-          />
-        </label>
+      </div>
+
+      <div className="v3a-flow" aria-live="polite">
+        <p className="v3a-flow-title">Where it goes</p>
+        {parts ? (
+          <ol className="v3a-flow-list">
+            <li className="is-fee">
+              <span>Network fee, fixed</span>
+              <span className="num">{sats(SPLIT_FEE)}</span>
+            </li>
+            {config.members.map((m, i) => (
+              <li key={i}>
+                <span>
+                  {m.name}
+                  {m.jar && <em> · splits again</em>}
+                </span>
+                <span className="num">{sats(parts[i])}</span>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="hint v3a-flow-empty">The smallest payment this jar can split is {bch(engine.min, 2)} BCH.</p>
+        )}
       </div>
 
       {sandbox ? (
@@ -97,7 +142,6 @@ export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: Ja
           <div className="v3a-qr-frame">
             <div className="qr-card">
               <QR value={uri} label={`QR code: pay ${bch(chosen)} BCH to the ${config.name} jar`} size={236} />
-              <p className="qr-amount num">{bch(chosen)} BCH</p>
               <p className="qr-address mono">{snap.address}</p>
             </div>
           </div>
@@ -118,7 +162,7 @@ export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: Ja
           Now try to cheat it <span aria-hidden="true">↓</span>
         </button>
       )}
-      {tooSmall && <p className="problem pay-problem" role="alert">The smallest payment this jar can split is {bch(engine.min, 2)} BCH.</p>}
+      
     </section>
   );
 }

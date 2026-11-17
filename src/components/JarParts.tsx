@@ -1,8 +1,8 @@
 // Pieces of the jar page: the activity feed and the cheat scene.
 import { useState } from 'react';
-import type { JarConfig } from '../lib/jar';
+import { splitPot, SPLIT_FEE, type JarConfig } from '../lib/jar';
 import type { JarEngine, JarEvent, JarSnapshot } from '../lib/engine';
-import { explorerTx, jarTree, type CheatKind } from '../lib/chain';
+import { explorerTx, jarTree, swapPair, type CheatKind } from '../lib/chain';
 import { bch, sats, shortHash } from '../lib/format';
 
 const LABEL: Record<JarEvent['kind'], string> = {
@@ -113,6 +113,67 @@ export function Refusal({ event, sandbox, after }: { event: JarEvent; sandbox: b
   );
 }
 
+/** The payment the receipt is drawn for: the same 0.001 BCH the sandbox cheat pays. */
+const RECEIPT_PAYMENT = 100_000n;
+
+/**
+ * The thief's transaction as a receipt: what the contract demands for each member
+ * next to what the thief sends. Every amount is computed from this jar's shares.
+ */
+function CheatReceipt({ config, kind, refused, armed }: { config: JarConfig; kind: CheatKind; refused?: JarEvent; armed: boolean }) {
+  const fair = splitPot(RECEIPT_PAYMENT, config.members.map((m) => m.bps), SPLIT_FEE);
+  let thief: (bigint | null)[];
+  if (kind === 'all') thief = fair.map((_, i) => (i === 0 ? RECEIPT_PAYMENT - SPLIT_FEE : null));
+  else {
+    thief = [...fair];
+    const pair = swapPair(fair);
+    if (pair) [thief[pair[0]], thief[pair[1]]] = [fair[pair[1]], fair[pair[0]]];
+  }
+  const outs = thief.filter((a) => a !== null).length;
+  return (
+    <figure className={`v3a-receipt ${refused ? 'is-refused' : ''} ${armed ? 'is-armed' : ''}`}>
+      <div className="v3a-receipt-head">
+        <p className="v3a-receipt-title">The thief's transaction</p>
+        <p className="v3a-receipt-sub num">For a {bch(RECEIPT_PAYMENT)} BCH payment, in sats</p>
+      </div>
+      <table className="v3a-receipt-table">
+        <thead>
+          <tr>
+            <th scope="col">Member</th>
+            <th scope="col">Contract</th>
+            <th scope="col">Thief</th>
+          </tr>
+        </thead>
+        <tbody>
+          {config.members.map((m, i) => {
+            const off = thief[i] !== fair[i];
+            return (
+              <tr key={i} className={off ? 'is-off' : ''}>
+                <th scope="row">{m.name}</th>
+                <td className="num">{sats(fair[i])}</td>
+                <td className="num">{thief[i] === null ? <span className="v3a-receipt-none">nothing</span> : sats(thief[i]!)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+        <tfoot>
+          <tr className={outs !== fair.length ? 'is-off' : ''}>
+            <th scope="row">Outputs</th>
+            <td className="num">{fair.length}</td>
+            <td className="num">{outs}</td>
+          </tr>
+        </tfoot>
+      </table>
+      <figcaption className="visually-hidden">{CHEATS[kind].text(config.members[0]?.name ?? 'member 1')}</figcaption>
+      {refused && (
+        <p className="v3a-stamp" aria-hidden="true">
+          Refused{refused.line ? <span>line {refused.line}</span> : null}
+        </p>
+      )}
+    </figure>
+  );
+}
+
 export function CheatPanel({ config, snap, engine }: { config: JarConfig; snap: JarSnapshot; engine: JarEngine }) {
   const lastCheat = snap.events.find((e) => e.kind === 'cheat');
   const sandbox = config.net === 'sandbox';
@@ -125,32 +186,36 @@ export function CheatPanel({ config, snap, engine }: { config: JarConfig; snap: 
     engine.armCheat(chosen);
     if (sandbox) engine.simulatePayment(100_000n);
   };
+  const refusedHere = lastCheat && (lastCheat.cheat ?? 'all') === chosen ? lastCheat : undefined;
   return (
     <section className="cheat v3a-panel v3a-cheat" id="cheat" aria-labelledby="cheat-title" data-rise>
-      <h2 id="cheat-title" className="cheat-title v3a-h2">
-        Try to cheat
-      </h2>
-      <p className="cheat-text">
-        The thief gets the first shot at the next payment: a transaction that spends the jar's coin and breaks the agreement. {CHEATS[chosen].text(first)} It is
-        broadcast to the {sandbox ? 'in-browser Bitcoin Cash VM' : 'network'} as is, with no check on our side. Then the honest split runs.
-      </p>
-      {canSwap && <CheatChoice kind={chosen} onChange={setKind} disabled={snap.cheatArmed} />}
-      <div className="cheat-row">
-        {snap.cheatArmed ? (
-          <>
-            <span className="cheat-armed" role="status">
-              Thief is waiting. {sandbox ? '' : 'Pay any amount into the jar.'}
-            </span>
-            <button type="button" className="v3a-textbtn" onClick={() => engine.disarmCheat()}>
-              Call it off
+      <div className="v3a-cheat-copy">
+        <h2 id="cheat-title" className="cheat-title v3a-h2">
+          Try to cheat
+        </h2>
+        <p className="cheat-text">
+          {CHEATS[chosen].text(first)} The thief's transaction goes to the {sandbox ? 'in-browser Bitcoin Cash VM' : 'network'} as is, with no check on
+          our side. Then the honest split runs.
+        </p>
+        {canSwap && <CheatChoice kind={chosen} onChange={setKind} disabled={snap.cheatArmed} />}
+        <div className="cheat-row">
+          {snap.cheatArmed ? (
+            <>
+              <span className="cheat-armed" role="status">
+                Thief is waiting. {sandbox ? '' : 'Pay any amount into the jar.'}
+              </span>
+              <button type="button" className="v3a-textbtn" onClick={() => engine.disarmCheat()}>
+                Call it off
+              </button>
+            </>
+          ) : (
+            <button type="button" className="v3-pill v3-pill--light" onClick={run} disabled={snap.status !== 'watching'}>
+              {sandbox ? 'Pay 0.001 BCH and let the thief try first' : 'Let the thief try the next payment'}
             </button>
-          </>
-        ) : (
-          <button type="button" className="v3-pill v3-pill--light" onClick={run} disabled={snap.status !== 'watching'}>
-            {sandbox ? 'Pay 0.001 BCH and let the thief try first' : 'Let the thief try the next payment'}
-          </button>
-        )}
+          )}
+        </div>
       </div>
+      <CheatReceipt config={config} kind={chosen} refused={refusedHere} armed={snap.cheatArmed} />
       {lastCheat && <Refusal event={lastCheat} sandbox={sandbox} key={lastCheat.id} />}
     </section>
   );

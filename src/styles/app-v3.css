@@ -306,7 +306,36 @@ html.v3-app body::before { display: none; }
   line-height: 1;
   color: rgba(242, 243, 243, 0.42);
 }
-.v3a .row-x { align-self: end; margin-bottom: 6px; }
+.v3a .row-x { align-self: end; margin-bottom: 8px; }
+/* Remove: a round hairline button with a thin cross. */
+.v3a-iconbtn {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  color: rgba(242, 243, 243, 0.62);
+  cursor: pointer;
+  transition: color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.v3a-iconbtn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+.v3a-iconbtn:hover:not(:disabled) { color: var(--v3-refused); box-shadow: inset 0 0 0 1px rgba(255, 107, 94, 0.5); background: rgba(255, 107, 94, 0.06); }
+.v3a-iconbtn:disabled { opacity: 0.3; cursor: not-allowed; }
+.v3a .v3a-iconbtn:focus-visible { outline: 2px solid var(--v3-money); outline-offset: 3px; }
+/* A valid address earns a green tick inside its field. */
+.v3a .row-addr.is-ok .input {
+  padding-right: 46px;
+  background: rgba(255, 255, 255, 0.035) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.2 8.4l2.4 2.4 5.2-5.4' fill='none' stroke='%230ac18e' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right 16px center / 18px no-repeat;
+}
+/* Share: the number, then a quiet % inside the field. */
+.v3a-suffix { position: relative; display: block; }
+.v3a .v3a-suffix .input { padding: 0 34px 0 12px; text-align: right; }
+.v3a-suffix > span { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 0.95rem; color: var(--v3a-label); pointer-events: none; }
+.v3a .v3a-nest-tip { margin: 16px 0 0; }
 .v3a .row-problem,
 .v3a .row-nested { grid-column: 2 / -1; margin: 0; }
 .v3a .row-nested { font-size: 0.9rem; color: var(--v3-money); }
@@ -332,8 +361,19 @@ html.v3-app body::before { display: none; }
 }
 .v3a .rows-total.is-ok { color: var(--v3-money); }
 .v3a .rows-total.is-off { color: var(--v3-refused); }
-.v3a-wallet { display: grid; gap: 10px; padding: 0 clamp(4px, 1vw, 12px); }
-.v3a-wallet-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+.v3a-wallet {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px 24px;
+  padding: 18px 18px 18px 26px;
+  border-radius: var(--v3a-radius);
+  background: var(--v3a-glass);
+  border: 1px solid var(--v3a-hair);
+}
+.v3a .v3a-wallet-title { margin: 0; font-family: var(--v3-caps-font); font-weight: 500; font-size: 1.1rem; letter-spacing: -0.01em; }
+.v3a-wallet-pills { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.v3a-wallet > :not(.v3a-wallet-title):not(.v3a-wallet-pills) { grid-column: 1 / -1; margin: 0; }
 
 .v3a-card { display: grid; gap: 28px; }
 /* Allocation: one brushed-steel bar cut in proportion to the shares. */
@@ -373,6 +413,27 @@ html.v3-app body::before { display: none; }
   animation: v3a-rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .v3a-preview-qr .qr { width: 100% !important; }
+/* Before the address exists: a ghost of the QR, dimmed and out of focus. */
+.v3a-preview-ghost { display: block; width: 100%; height: 100%; opacity: 0.16; filter: blur(2.5px) invert(1); }
+.v3a-preview-ghost .qr { width: 100% !important; }
+.v3a-checks { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 10px; }
+.v3a-checks li { position: relative; padding-left: 30px; font-size: 0.92rem; line-height: 1.45; color: var(--v3a-hint); transition: color 0.3s; }
+.v3a-checks li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(242, 243, 243, 0.3);
+  transition: border-color 0.3s, background 0.3s;
+}
+.v3a-checks li.is-ok { color: var(--v3-white); }
+.v3a-checks li.is-ok::before {
+  border-color: var(--v3-money);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.2 8.4l2.4 2.4 5.2-5.4' fill='none' stroke='%230ac18e' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 13px no-repeat;
+}
 /* An empty viewfinder until the address can be computed. */
 .v3a-preview-blank {
   display: block;
@@ -406,26 +467,96 @@ html.v3-app body::before { display: none; }
 .v3a.jar-sandbox .pay { position: sticky; top: 96px; border-radius: var(--v3a-radius); }
 .v3a .pay { display: grid; gap: 22px; padding: clamp(22px, 2.6vw, 34px); border: 1px solid var(--v3a-hair); }
 .v3a .pay-title { margin: 0; }
-.v3a .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.v3a .pay { gap: 26px; }
+/* The amount is the field (Uniswap): large, edited in place, a hairline that turns green on focus. */
+.v3a-amount { display: grid; gap: 10px; }
+.v3a .v3a-amount-label { font-size: 0.84rem; font-weight: 600; color: var(--v3a-label); }
+.v3a-amount-field {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2em;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: var(--v3-caps-font);
+  font-weight: 600;
+  font-size: clamp(3rem, 4.6vw, 4.3rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  cursor: text;
+}
+.v3a-amount-field:focus-within { border-bottom-color: var(--v3-money); box-shadow: 0 1px 0 var(--v3-money); }
+.v3a-amount-box { position: relative; display: inline-block; min-width: 0.6em; max-width: calc(100% - 1.1em); }
+/* Long amounts step down instead of scrolling inside the field. */
+.v3a-amount-field.is-long { font-size: clamp(2.4rem, 3.4vw, 3.1rem); }
+.v3a-amount-field.is-xlong { font-size: clamp(1.9rem, 2.5vw, 2.35rem); }
+.v3a-amount-twin { display: block; visibility: hidden; white-space: pre; padding-right: 0.14em; overflow: hidden; }
+.v3a .v3a-amount-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: var(--v3-white);
+  font: inherit;
+  letter-spacing: inherit;
+}
+.v3a .v3a-amount-input::placeholder { color: rgba(242, 243, 243, 0.3); }
+.v3a-amount-unit { font-size: 0.32em; font-weight: 500; letter-spacing: 0.04em; color: var(--v3a-label); }
+.v3a .v3a-amount-sub { margin: 0; font-size: 0.92rem; color: var(--v3a-hint); }
+.v3a-amount.is-off .v3a-amount-input { color: var(--v3-refused); }
+.v3a-amount.is-off .v3a-amount-field { border-bottom-color: rgba(255, 107, 94, 0.65); box-shadow: none; }
+/* Where it goes (Wise): a green rail, the fee first, then every member's part. */
+.v3a-flow { display: grid; gap: 10px; }
+.v3a .v3a-flow-title { margin: 0; font-size: 0.84rem; font-weight: 600; color: var(--v3a-label); }
+.v3a-flow-list { position: relative; list-style: none; margin: 0; padding: 0 0 0 22px; display: grid; }
+.v3a-flow-list::before { content: ''; position: absolute; left: 4px; top: 14px; bottom: 14px; width: 1.5px; background: linear-gradient(180deg, rgba(242, 243, 243, 0.3) 0%, var(--v3-money) 22%, rgba(10, 193, 142, 0.35) 100%); }
+.v3a-flow-list li { position: relative; display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 6px 0; font-size: 0.95rem; color: var(--v3-white); }
+.v3a-flow-list li::before { content: ''; position: absolute; left: -22px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: #121416; border: 1.5px solid var(--v3-money); }
+.v3a-flow-list li.is-fee { color: var(--v3a-hint); }
+.v3a-flow-list li.is-fee::before { border-color: rgba(242, 243, 243, 0.4); }
+.v3a-flow-list li em { font-style: normal; color: var(--v3a-hint); }
+.v3a-flow-list .num { font-weight: 700; }
+.v3a-flow-list li.is-fee .num { font-weight: 500; }
+.v3a .v3a-flow-empty { margin: 0; }
+.v3a-amount.is-off ~ .v3a-flow .v3a-flow-empty { color: var(--v3-refused); }
+.v3a .chips { display: flex; gap: 4px; padding: 4px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03); }
 .v3a .chip {
+  flex: 1 1 0;
   min-height: 44px;
-  padding: 0 1.05rem;
+  padding: 0 0.5rem;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
-  color: var(--v3-white);
+  white-space: nowrap;
+  color: rgba(242, 243, 243, 0.74);
   font-family: var(--v3a-pill-font);
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.25s, color 0.25s, box-shadow 0.25s;
 }
-.v3a .chip:hover:not(.is-on) { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.34); }
-.v3a .chip.is-on { background: #e6e8e8; color: #0a0b0c; box-shadow: none; }
-.v3a .chip-input { flex: 1 1 96px; display: inline-flex; align-items: center; padding: 0 1.05rem; cursor: text; }
-.v3a .chip-input input { width: 100%; border: 0; background: transparent; outline: none; color: var(--v3-white); font-size: 0.9rem; }
-.v3a .chip-input input::placeholder { color: rgba(242, 243, 243, 0.62); }
+.v3a .chip:hover:not(.is-on) { color: #fff; background: rgba(255, 255, 255, 0.06); }
+.v3a .chip.is-on { background: #e6e8e8; color: #0a0b0c; }
+.v3a .chip-input {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  min-height: 54px;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  cursor: text;
+  transition: box-shadow 0.25s;
+}
+.v3a .chip-input.is-on { box-shadow: inset 0 0 0 1px rgba(242, 243, 243, 0.62); }
+.v3a .chip-input input { width: 100%; border: 0; background: transparent; outline: none; color: var(--v3-white); font-size: 0.95rem; font-weight: 600; }
+.v3a .chip-input input::placeholder { color: rgba(242, 243, 243, 0.62); font-weight: 500; }
+.v3a .chip-unit { flex: none; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; color: var(--v3a-label); }
 .v3a .chip-input:has(input[aria-invalid='true']) { box-shadow: inset 0 0 0 1px rgba(255, 107, 94, 0.75); }
 .v3a .pay-problem { margin: 0; padding: 12px 16px; border-radius: 16px; background: rgba(255, 107, 94, 0.08); }
 .v3a .pay-sandbox { display: grid; gap: 14px; }
@@ -570,13 +701,80 @@ html.v3-app body::before { display: none; }
 .v3a .cheat {
   margin-top: clamp(48px, 6vw, 88px);
   display: grid;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 32px clamp(32px, 4.4vw, 72px);
+  align-items: center;
   padding: clamp(24px, 3.6vw, 52px);
   scroll-margin-top: 96px;
   border: 1px solid var(--v3a-hair);
 }
+.v3a-cheat-copy { display: grid; gap: 22px; align-content: center; justify-items: start; }
+.v3a .cheat .refusal { grid-column: 1 / -1; }
 .v3a .cheat-title { margin: 0; }
-.v3a .cheat-text { max-width: 62ch; font-size: 1.02rem; color: rgba(242, 243, 243, 0.74); }
+.v3a .cheat-text { max-width: 40ch; font-size: 1.04rem; color: rgba(242, 243, 243, 0.74); }
+
+/* The thief's transaction, as a receipt: the contract's column against the thief's. */
+.v3a-receipt {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  padding: clamp(20px, 2.4vw, 30px) clamp(20px, 2.4vw, 32px) clamp(14px, 1.6vw, 20px);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.46) 0%, rgba(0, 0, 0, 0.3) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 40px 80px -50px rgba(0, 0, 0, 0.95);
+  transition: border-color 0.4s;
+}
+.v3a-receipt.is-armed { border-color: rgba(255, 107, 94, 0.45); animation: v3a-armed 1.8s ease-in-out infinite; }
+@keyframes v3a-armed { 50% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 0 46px -14px rgba(255, 107, 94, 0.45); } }
+.v3a-receipt-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; padding-bottom: 16px; border-bottom: 1px dashed rgba(255, 255, 255, 0.16); }
+.v3a .v3a-receipt-title { margin: 0; font-family: var(--v3-caps-font); font-weight: 600; font-size: 1.02rem; letter-spacing: 0.03em; text-transform: uppercase; }
+.v3a .v3a-receipt-sub { margin: 0; font-size: 0.82rem; color: var(--v3a-hint); }
+.v3a-receipt-table { width: 100%; border-collapse: collapse; font-size: 0.98rem; transition: opacity 0.5s; }
+.v3a-receipt-table :is(th, td) { padding: 12px 0; text-align: right; font-weight: 500; }
+.v3a-receipt-table :is(th, td):first-child { text-align: left; }
+.v3a-receipt-table :is(th, td):last-child { width: 30%; }
+.v3a-receipt-table thead th { padding: 16px 0 6px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; color: var(--v3a-label); }
+.v3a-receipt-table tbody tr + tr { border-top: 1px solid rgba(255, 255, 255, 0.05); }
+.v3a-receipt-table tbody th { font-weight: 600; color: var(--v3-white); }
+.v3a-receipt-table td:nth-child(2) { color: rgba(242, 243, 243, 0.62); }
+.v3a-receipt-table td:last-child { color: var(--v3-white); }
+.v3a-receipt-table tr.is-off td:last-child { color: var(--v3-refused); font-weight: 700; }
+.v3a-receipt-none { font-weight: 500; font-style: italic; opacity: 0.8; }
+.v3a-receipt-table tfoot tr { border-top: 1px dashed rgba(255, 255, 255, 0.16); }
+.v3a-receipt-table tfoot :is(th, td) { padding-top: 14px; font-family: var(--v3-caps-font); font-weight: 600; font-size: 1.1rem; }
+.v3a-receipt-table tfoot th { color: var(--v3a-label); font-size: 0.86rem; font-family: inherit; }
+.v3a-receipt.is-refused .v3a-receipt-table { opacity: 0.5; }
+/* The rubber stamp, the moment the VM or the node says no. */
+.v3a .v3a-stamp {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  padding: 0.3em 0.75em 0.36em;
+  border: 3px solid var(--v3-refused);
+  border-radius: 14px;
+  background: rgba(10, 11, 12, 0.62);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  color: var(--v3-refused);
+  font-family: var(--v3-caps-font);
+  font-weight: 600;
+  font-size: clamp(2rem, 3.2vw, 2.9rem);
+  line-height: 0.95;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  box-shadow: 0 0 0 5px rgba(255, 107, 94, 0.1), 0 0 60px -10px rgba(255, 107, 94, 0.45);
+  animation: v3a-stamp 0.55s cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+}
+.v3a .v3a-stamp span { margin-top: 0.4em; font-size: 0.32em; letter-spacing: 0.16em; }
+@keyframes v3a-stamp {
+  from { opacity: 0; transform: translate(-50%, -50%) rotate(-8deg) scale(1.7); }
+  to { opacity: 1; transform: translate(-50%, -50%) rotate(-8deg) scale(1); }
+}
 .v3a .cheat-choice { max-width: 100%; justify-self: start; }
 .v3a .cheat-choice .seg-btn:disabled { cursor: default; opacity: 0.6; }
 .v3a .cheat-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
@@ -646,24 +844,62 @@ html.v3-app body::before { display: none; }
 .v3a .refusal-code code { padding: 0; background: none; border-radius: 0; color: var(--v3-white); font: inherit; }
 .v3a .refusal-after { color: var(--v3-money); font-weight: 600; }
 
-/* ---------- What the contract enforces: title left, the terms right ---------- */
+/* ---------- What the contract enforces: title left, each term a large figure ---------- */
 .v3a .rules,
 .v3a-rules {
   margin-top: clamp(72px, 9vw, 136px);
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: 28px clamp(28px, 5vw, 88px);
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: 32px clamp(28px, 5vw, 88px);
   max-width: none;
   align-items: start;
+  border: 0;
+  padding: 0;
+  background: none;
 }
-.v3a-rules-body { display: grid; gap: 24px; }
-.v3a .rules-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 20px; font-size: 1.02rem; line-height: 1.62; color: rgba(242, 243, 243, 0.76); }
-.v3a .rules-addr { color: rgba(242, 243, 243, 0.76); overflow-wrap: anywhere; }
-.v3a .rules-addr .mono { color: var(--v3-white); }
-.v3a .rules-addr a,
+.v3a-rules-head { grid-row: 1 / span 2; position: sticky; top: 112px; display: grid; gap: 22px; align-content: start; }
+.v3a .rules-title { margin: 0; }
+.v3a-rules-head .hint { max-width: 30em; }
 .v3a .rules .hint a { color: var(--v3-white); text-decoration-color: rgba(242, 243, 243, 0.35); }
-.v3a .rules-addr a:hover,
 .v3a .rules .hint a:hover { text-decoration-color: currentColor; }
+.v3a-terms { margin: 0; display: grid; }
+.v3a-term {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+  gap: 10px clamp(20px, 3vw, 48px);
+  align-items: start;
+  padding: clamp(24px, 2.8vw, 36px) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.v3a-term:last-child { border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.v3a-term dt { display: grid; gap: 10px; }
+.v3a-term-fig {
+  font-family: var(--v3-caps-font);
+  font-weight: 600;
+  font-size: clamp(2.6rem, 4.2vw, 4.1rem);
+  line-height: 0.84;
+  letter-spacing: -0.045em;
+  color: var(--v3-white);
+}
+.v3a-term-unit { font-size: 0.86rem; font-weight: 600; color: var(--v3a-label); }
+.v3a-term dd { margin: 0; padding-top: 0.15em; max-width: 34em; font-size: 1.04rem; line-height: 1.62; color: rgba(242, 243, 243, 0.76); }
+.v3a-term-note { display: block; margin-top: 10px; font-size: 0.88rem; color: var(--v3a-hint); }
+/* The address, as one glass line with its two actions. */
+.v3a-addr {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 20px;
+  padding: 14px 14px 14px 24px;
+  border-radius: 999px;
+  background: var(--v3a-glass);
+  border: 1px solid var(--v3a-hair);
+}
+.v3a .v3a-addr-label { margin: 0; font-size: 0.84rem; font-weight: 600; color: var(--v3a-label); white-space: nowrap; }
+.v3a .v3a-addr-value { margin: 0; font-size: 0.84rem; line-height: 1.45; color: var(--v3-white); overflow-wrap: anywhere; }
+.v3a-addr-actions { display: flex; gap: 8px; }
+.v3a-addr-actions .v3-pill { text-decoration: none; }
 
 @keyframes v3a-rise {
   from { opacity: 0; transform: translateY(14px); }
@@ -681,6 +917,9 @@ html.v3-app body::before { display: none; }
   .v3a-alloc { grid-column: 1 / -1; }
 }
 @media (max-width: 900px) {
+  .v3a .cheat { grid-template-columns: minmax(0, 1fr); }
+  .v3a-rules-head { grid-row: auto; position: static; }
+  .v3a-addr { grid-column: auto; }
   .v3a .jar-grid { grid-template-columns: minmax(0, 1fr); }
   .v3a.jar-live .pay,
   .v3a.jar-sandbox .pay { position: static; }
@@ -710,10 +949,18 @@ html.v3-app body::before { display: none; }
   .v3a .create-top { grid-template-columns: minmax(0, 1fr); }
   .v3a .seg { display: flex; width: 100%; border-radius: 26px; }
   .v3a .seg-btn { flex: 1 1 0; padding: 8px 10px; border-radius: 22px; white-space: normal; font-size: 0.84rem; }
-  .v3a .row { grid-template-columns: 26px minmax(0, 1fr) 92px; gap: 12px 10px; padding: 20px 0; }
+  .v3a .row { grid-template-columns: 22px minmax(0, 1fr) 104px 40px; gap: 12px 8px; padding: 20px 0; }
+  .v3a .v3a-suffix .input { padding: 0 30px 0 8px; }
+  .v3a-suffix > span { right: 12px; }
   .v3a .row-n { font-size: 1.2rem; }
   .v3a .row-addr { grid-column: 2 / -1; grid-row: 2; }
-  .v3a .row-x { grid-column: 2 / -1; justify-self: start; margin: 0 0 0 -8px; }
+  .v3a .row-x { grid-column: 4; grid-row: 1; justify-self: end; align-self: end; margin: 0 0 8px; }
+  .v3a-wallet { grid-template-columns: minmax(0, 1fr); padding: 18px; border-radius: 22px; }
+  .v3a-wallet-pills { justify-content: stretch; }
+  .v3a-amount-pick { grid-template-columns: minmax(0, 1fr); }
+  .v3a-term { grid-template-columns: minmax(0, 1fr); }
+  .v3a-addr { grid-template-columns: minmax(0, 1fr); border-radius: 22px; padding: 18px; }
+  .v3a-receipt-table { font-size: 0.9rem; }
   .v3a .rows-total { margin-left: 0; width: 100%; }
   .v3a-wallet { padding: 0; }
   .v3a-wallet-pills .v3-pill { width: 100%; }

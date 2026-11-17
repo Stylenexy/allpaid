@@ -138,6 +138,13 @@ export function Create() {
   const address = useMemo(() => (valid ? jarAddress(config) : null), [valid, config]);
   const total = rows.reduce((s, r) => s + (toBps(r.pct) || 0), 0);
   const problemFor = (field: string) => (touched ? problems.find((p) => p.field === field)?.message : undefined);
+  // Live readiness, shown before anything is touched: what still stands between the form and a jar.
+  const hasProblem = (field: string) => problems.some((p) => p.field === field);
+  const rowReady = (i: number) =>
+    !!rows[i] && !!rows[i].name.trim() && !!(rows[i].jar || rows[i].address.trim()) && !hasProblem(`m${i}.name`) && !hasProblem(`m${i}.address`);
+  const readyCount = rows.filter((_, i) => rowReady(i)).length;
+  const nameReady = !!name.trim() && !hasProblem('name');
+  const sharesReady = total === TOTAL_BPS && !problems.some((p) => p.field === 'bps' || /^m\d+\.bps$/.test(p.field));
 
   const update = (i: number, patch: Partial<Row>) => setRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   // A pasted jar link turns the member into a nested jar.
@@ -179,8 +186,8 @@ export function Create() {
         <div className="v3a-hero-in">
           <Title>Write the split.<br />Lock it in.</Title>
           <p className="v3a-lede" data-rise>
-            Write down who is in the group and how the money splits. That is the whole setup: the jar's address is computed from it, right here,
-            and no server keeps a copy. To nest a jar (say, your crew's), make that jar first, then paste its link as a member here.
+            Name the group, then give each member an address and a share. The jar's address is computed from that, right here. No server keeps a
+            copy.
           </p>
         </div>
       </header>
@@ -247,13 +254,13 @@ export function Create() {
                         aria-invalid={!!problemFor(`m${i}.name`)}
                       />
                     </div>
-                    <div className="field row-addr">
-                      <label htmlFor={`m${i}-addr`}>Payout address, or another jar's link</label>
+                    <div className={`field row-addr ${rowReady(i) ? 'is-ok' : ''}`}>
+                      <label htmlFor={`m${i}-addr`}>Payout address or jar link</label>
                       <input
                         id={`m${i}-addr`}
                         className="input mono"
                         value={r.address}
-                        placeholder={`${prefix}q…  or  https://…/jar#…`}
+                        placeholder={`${prefix}q…`}
                         spellCheck={false}
                         autoCapitalize="off"
                         autoCorrect="off"
@@ -262,24 +269,30 @@ export function Create() {
                       />
                     </div>
                     <div className="field row-pct">
-                      <label htmlFor={`m${i}-pct`}>Share %</label>
-                      <input
-                        id={`m${i}-pct`}
-                        className="input num"
-                        inputMode="decimal"
-                        value={r.pct}
-                        onChange={(e) => update(i, { pct: e.target.value })}
-                        aria-invalid={!!problemFor(`m${i}.bps`)}
-                      />
+                      <label htmlFor={`m${i}-pct`}>Share</label>
+                      <span className="v3a-suffix">
+                        <input
+                          id={`m${i}-pct`}
+                          className="input num"
+                          inputMode="decimal"
+                          value={r.pct}
+                          onChange={(e) => update(i, { pct: e.target.value })}
+                          aria-invalid={!!problemFor(`m${i}.bps`)}
+                        />
+                        <span aria-hidden="true">%</span>
+                      </span>
                     </div>
                     <button
                       type="button"
-                      className="v3a-textbtn row-x"
+                      className="v3a-iconbtn row-x"
                       onClick={() => remove(i)}
                       disabled={rows.length <= MIN_MEMBERS}
                       aria-label={`Remove member ${i + 1}`}
+                      title="Remove"
                     >
-                      Remove
+                      <svg viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M4.5 4.5l7 7m0-7l-7 7" />
+                      </svg>
                     </button>
                     {r.jar && (
                       <p className="row-nested">
@@ -306,9 +319,11 @@ export function Create() {
                   Total {(total / 100).toFixed(2).replace(/\.00$/, '')}%
                 </p>
               </div>
+              <p className="hint v3a-nest-tip">To nest a jar (say, your crew's), make that jar first, then paste its link as a member's address.</p>
             </div>
 
             <div className="v3a-wallet" data-rise>
+              <p className="v3a-wallet-title">No addresses at hand?</p>
               <div className="v3a-wallet-pills">
                 {(net === 'mainnet' || net === 'chipnet') && (
                   <button type="button" className="v3-pill v3a-pill--quiet v3a-pill--sm" onClick={fillFromWallet} disabled={walletFill || wc.state === 'connecting' || wc.state === 'reconnecting'}>
@@ -361,7 +376,13 @@ export function Create() {
 
               <div className={`v3a-preview ${address ? 'is-ready' : ''}`}>
                 <div className="v3a-preview-qr">
-                  {address ? <QR value={address} label="QR code of this jar's address" size={176} /> : <span className="v3a-preview-blank" aria-hidden="true" />}
+                  {address ? (
+                    <QR value={address} label="QR code of this jar's address" size={176} />
+                  ) : (
+                    <span className="v3a-preview-ghost" aria-hidden="true">
+                      <QR value="bitcoincash:pallpaid-preview" label="" size={176} />
+                    </span>
+                  )}
                 </div>
                 <div className="create-preview" aria-live="polite">
                   {address ? (
@@ -369,12 +390,24 @@ export function Create() {
                       <p className="preview-label">Your jar's address</p>
                       <p className="mono preview-addr">{address}</p>
                       <p className="hint">
-                        Computed from the members' addresses and shares. Payments of at least {bch(minPaymentFor(config.members), 2)} BCH split on
-                        their own{levelCount(config.members) > 1 ? `, over ${levelCount(config.members)} levels to ${walletCount(config.members)} wallets` : ''}.
+                        Payments of at least {bch(minPaymentFor(config.members), 2)} BCH split on their own
+                        {levelCount(config.members) > 1 ? `, over ${levelCount(config.members)} levels to ${walletCount(config.members)} wallets` : ''}.
                       </p>
                     </>
                   ) : (
-                    <p className="hint">The jar's address appears here as soon as every member has a valid {prefix} address and the shares add up to 100%.</p>
+                    <>
+                      <p className="preview-label">The QR appears when</p>
+                      <ul className="v3a-checks">
+                        <li className={nameReady ? 'is-ok' : ''}>The group has a name</li>
+                        <li className={readyCount === rows.length ? 'is-ok' : ''}>
+                          Every member has a name and a valid {prefix} address{' '}
+                          <span className="num">
+                            ({readyCount} of {rows.length})
+                          </span>
+                        </li>
+                        <li className={sharesReady ? 'is-ok' : ''}>The shares add up to 100%</li>
+                      </ul>
+                    </>
                   )}
                 </div>
               </div>
