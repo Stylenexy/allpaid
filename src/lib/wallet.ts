@@ -4,7 +4,7 @@
 import { TransactionBuilder, placeholderP2PKHUnlocker, type NetworkProvider, type SpendableUtxo } from 'cashscript';
 import type { DappConnectionManager } from '@wizardconnect/dapp';
 import { sourceOutputToRelay, transactionToHex } from '@wizardconnect/core/hdwalletv1-serialize';
-import { encodeCashAddress, hash160, hashTransaction, hexToBin } from '@bitauth/libauth';
+import { binToHex, cashAddressToLockingBytecode, encodeCashAddress, hash160, hashTransaction, hexToBin, sha256 } from '@bitauth/libauth';
 import { prefixFor, type Net } from './jar';
 import { errorText, isAlreadyKnown } from './chain';
 
@@ -12,8 +12,10 @@ const PATHS = [
   { child: 0, name: 'receive' },
   { child: 1, name: 'change' },
 ] as const;
-/** Addresses checked per path. Wallets that use more than this rarely do on a phone. */
-const SCAN_DEPTH = 12;
+/** Standard wallet gap limit: the scan of a path stops after this many unused addresses in a row. */
+export const GAP_LIMIT = 20;
+/** Never look past this many addresses per path, however long the history. */
+export const MAX_SCAN = 100;
 /** Fee rate for the payment, in sats per byte. The relay minimum is 1. */
 const FEE_RATE = 1.2;
 
@@ -35,21 +37,59 @@ function addressFor(manager: DappConnectionManager, child: number, index: number
   return encodeCashAddress({ prefix: prefixFor(net), type: 'p2pkh', payload: hash160(pubkey) }).address;
 }
 
-export async function scanWallet(manager: DappConnectionManager, net: Net, provider: NetworkProvider): Promise<WalletScan> {
-  const lookups: Promise<WalletCoin[]>[] = [];
-  for (const path of PATHS) {
-    for (let index = 0; index < SCAN_DEPTH; index += 1) {
+type HistoryProvider = NetworkProvider & {
+  performRequest(name: string, ...parameters: (string | number | boolean)[]): Promise<unknown>;
+};
+
+const hasHistory = (provider: NetworkProvider): provider is HistoryProvider =>
+  typeof (provider as Partial<HistoryProvider>).performRequest === 'function';
+
+/**
+ * Has this address ever been used, and what can it spend now? An Electrum
+ * server answers from the address history, so an address that was emptied
+ * still counts as used. Other providers (the in-memory one) fall back to coins.
+ */
+async function probe(provider: NetworkProvider, address: string): Promise<{ used: boolean; coins: SpendableUtxo[] }> {
+  if (hasHistory(provider)) {
+    const lock = cashAddressToLockingBytecode(address);
+    if (typeof lock === 'string') return { used: false, coins: [] };
+    const scripthash = binToHex(Uint8Array.from(sha256.hash(lock.bytecode)).reverse());
+    const history = await provider.performRequest('blockchain.scripthash.get_history', scripthash);
+    if (!Array.isArray(history) || history.length === 0) return { used: false, coins: [] };
+    return { used: true, coins: await provider.getUtxos(address) };
+  }
+  const coins = await provider.getUtxos(address);
+  return { used: coins.length > 0, coins };
+}
+
+/** Walk one path (receive or change) until GAP_LIMIT unused addresses in a row, or MAX_SCAN. */
+async function scanPath(manager: DappConnectionManager, path: (typeof PATHS)[number], net: Net, provider: NetworkProvider): Promise<WalletCoin[]> {
+  const found: WalletCoin[] = [];
+  let lastUsed = -1;
+  let next = 0;
+  while (next < MAX_SCAN && next <= lastUsed + GAP_LIMIT) {
+    const end = Math.min(MAX_SCAN, lastUsed + GAP_LIMIT + 1);
+    const batch: Promise<void>[] = [];
+    for (let index = next; index < end; index += 1) {
       const address = addressFor(manager, path.child, index, net);
       if (!address) continue;
-      lookups.push(
-        provider
-          .getUtxos(address)
-          .then((utxos) => utxos.filter((u) => !u.token).map((u) => ({ ...u, address, path: path.name, index })))
-          .catch(() => []),
+      batch.push(
+        probe(provider, address)
+          .catch(() => ({ used: false, coins: [] as SpendableUtxo[] }))
+          .then(({ used, coins }) => {
+            if (used && index > lastUsed) lastUsed = index;
+            for (const u of coins) if (!u.token) found.push({ ...u, address, path: path.name, index });
+          }),
       );
     }
+    await Promise.all(batch);
+    next = end;
   }
-  const coins = (await Promise.all(lookups)).flat();
+  return found.sort((a, b) => a.index - b.index);
+}
+
+export async function scanWallet(manager: DappConnectionManager, net: Net, provider: NetworkProvider): Promise<WalletScan> {
+  const coins = (await Promise.all(PATHS.map((path) => scanPath(manager, path, net, provider)))).flat();
   const changeAddress = addressFor(manager, 1, 0, net) ?? addressFor(manager, 0, 0, net);
   if (!changeAddress) throw new Error('The wallet did not share any addresses.');
   return { coins, balance: coins.reduce((s, c) => s + c.satoshis, 0n), changeAddress };
@@ -85,7 +125,7 @@ export async function payWithWallet(opts: {
   try {
     builder.addBchChangeOutputIfNeeded({ to: scan.changeAddress, feeRate: FEE_RATE });
   } catch {
-    throw new Error('Not enough BCH in this wallet for that amount plus the network fee.');
+    throw new Error('Not enough BCH found in this wallet for that amount plus the network fee. Lower the amount, or scan the QR with this wallet.');
   }
   const wc = builder.generateWcTransactionObject({ broadcast: false, userPrompt: prompt });
   const relayRequest = {

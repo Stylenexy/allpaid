@@ -6,6 +6,7 @@
 // jar, which splits again. The contract does not care: every member is just a
 // locking bytecode, and a jar's address is a P2SH32 locking bytecode like any other.
 import { binToBase64, base64ToBin, binToHex, cashAddressToLockingBytecode, utf8ToBin, binToUtf8 } from '@bitauth/libauth';
+import { MAX_DEPTH, MAX_MEMBERS, MIN_MEMBERS, TOTAL_BPS, SPLIT_FEE, sharesProblem } from './shares';
 
 export type Net = 'mainnet' | 'chipnet' | 'sandbox';
 
@@ -34,15 +35,21 @@ export interface JarConfig {
   members: Member[];
 }
 
-/** Network fee the contract takes from each payment when it is split (satoshis). */
-export const SPLIT_FEE = 1000n;
-/** The contract refuses to create a payout below this many satoshis. */
-export const MIN_SHARE = 1000n;
-export const MIN_MEMBERS = 2;
-export const MAX_MEMBERS = 4;
-export const TOTAL_BPS = 10000;
-/** Levels of jars one payment may flow through: organiser jar, band jar, crew jar. */
-export const MAX_DEPTH = 3;
+export {
+  SPLIT_FEE,
+  MIN_SHARE,
+  MIN_MEMBERS,
+  MAX_MEMBERS,
+  TOTAL_BPS,
+  MAX_DEPTH,
+  splitPot,
+  minPayment,
+  minPaymentFor,
+  walletCount,
+  levelCount,
+  sharesProblem,
+  type ShareNode,
+} from './shares';
 
 export const prefixFor = (net: Net): 'bitcoincash' | 'bchtest' => (net === 'mainnet' ? 'bitcoincash' : 'bchtest');
 
@@ -51,62 +58,6 @@ export const subConfig = (parent: JarConfig, member: Member): JarConfig => ({
   net: parent.net,
   members: member.jar!.members,
 });
-
-/** Split a payment exactly like the contract does. Last member gets the remainder. */
-export function splitPot(paymentSats: bigint, bps: number[], fee: bigint = SPLIT_FEE): bigint[] {
-  const pot = paymentSats - fee;
-  const shares: bigint[] = [];
-  let given = 0n;
-  for (let i = 0; i < bps.length - 1; i += 1) {
-    const share = (pot * BigInt(bps[i])) / BigInt(TOTAL_BPS);
-    shares.push(share);
-    given += share;
-  }
-  shares.push(pot - given);
-  return shares;
-}
-
-const splittable = (payment: bigint, bps: number[], mins: bigint[], fee: bigint) =>
-  splitPot(payment, bps, fee).every((s, i) => s >= mins[i]);
-
-/**
- * Smallest payment from which every larger payment can be split, with each
- * member getting at least its minimum (MIN_SHARE for a wallet; for a nested jar,
- * enough for that jar to split again).
- */
-export function minPayment(bps: number[], fee: bigint = SPLIT_FEE, mins: bigint[] = bps.map(() => MIN_SHARE)): bigint {
-  // Any pot with pot * bps_i / 10000 >= min_i + 1 for every member is always
-  // splittable: floor rounding takes less than one satoshi from each earlier
-  // member, and the last member's remainder is never below its exact share.
-  let safePot = 0n;
-  bps.forEach((b, i) => {
-    const need = ((mins[i] + 1n) * BigInt(TOTAL_BPS) + BigInt(b) - 1n) / BigInt(b);
-    if (need > safePot) safePot = need;
-  });
-  let payment = safePot + fee;
-  while (splittable(payment - 1n, bps, mins, fee)) payment -= 1n;
-  return payment;
-}
-
-/** Minimum payment for a whole jar, nested jars included. */
-export function minPaymentFor(members: Member[]): bigint {
-  const mins = members.map((m) => (m.jar ? minPaymentFor(m.jar.members) : MIN_SHARE));
-  return minPayment(
-    members.map((m) => m.bps),
-    SPLIT_FEE,
-    mins,
-  );
-}
-
-/** Wallets paid by one payment into this jar, counting through nested jars. */
-export function walletCount(members: Member[]): number {
-  return members.reduce((n, m) => n + (m.jar ? walletCount(m.jar.members) : 1), 0);
-}
-
-/** Levels of splitting: 1 for a plain jar, 2 when a member is a jar. */
-export function levelCount(members: Member[]): number {
-  return 1 + Math.max(0, ...members.map((m) => (m.jar ? levelCount(m.jar.members) : 0)));
-}
 
 export interface Problem {
   field: string;
@@ -175,6 +126,9 @@ export function validateJar(config: JarConfig): Problem[] {
 
 /** Constructor arguments for Allpaid.cash, in contract order. Nested members must be resolved first. */
 export function contractArgs(config: JarConfig): [Uint8Array, Uint8Array, Uint8Array, Uint8Array, bigint, bigint, bigint, bigint, bigint] {
+  // Refuse to make a contract the chain would accept but could never split.
+  const problem = sharesProblem(config.name, config.members);
+  if (problem) throw new Error(problem);
   const locks = config.members.map((m) => {
     const lock = lockingBytecodeOf(m.address);
     if (typeof lock === 'string') throw new Error(`${m.name}: ${lock}`);
