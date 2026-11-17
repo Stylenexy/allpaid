@@ -254,8 +254,8 @@ function WizardPay({ config, jarAddress, amount, disabled }: { config: JarConfig
             headerBackground: 'var(--surface-1)',
             titleColor: 'var(--text)',
             subtitleColor: 'var(--text-soft)',
-            qrForeground: 'var(--qr-ink)',
-            qrBackground: 'var(--qr-bg)',
+            qrForeground: '#0d0d0d', // canvas: CSS variables do not resolve here (--qr-ink)
+            qrBackground: '#ffffff', // (--qr-bg)
             uriRowBackground: 'var(--bg)',
             uriTextColor: 'var(--text-soft)',
             borderColor: 'var(--line-strong)',
