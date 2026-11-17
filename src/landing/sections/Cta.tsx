@@ -17,7 +17,7 @@ export function Cta() {
         </div>
         <ul className="cta-plan" aria-label="How Allpaid is paid for">
           <li>Free for teams: a split costs the team about $0.002</li>
-          <li>Hosted keeper with payout alerts: $9 per venue per month, where tip-pooling software charges $50 or more</li>
+          <li>Planned: a hosted keeper with payout alerts at $9 per venue per month, where <a href="https://github.com/Stylenexy/allpaid#business-model">tip-pooling software charges $50 or more</a></li>
           <li>Event templates can include Allpaid as a visible, opt-in 0.5% member written into the address</li>
         </ul>
         <p className="cta-why">
