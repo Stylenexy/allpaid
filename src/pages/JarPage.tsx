@@ -146,8 +146,8 @@ function JarView({ config }: { config: JarConfig }) {
         </p>
         <p className="hint">
           Source of the contract: <a href={`${SITE.repoUrl}/blob/main/contracts/Allpaid.cash`}>contracts/Allpaid.cash</a>. This page
-          splits within seconds while it is open. With every page closed, the keeper (a small program anyone can run, also scheduled on our
-          repository) sends the split on its next round, every few minutes. Every copy builds the same transaction, so it does not matter who
+          splits within seconds while it is open. With every page closed, anyone can run the keeper (<code>npm run keeper -- &lt;jar link&gt;</code>), a small program that
+          sends the split for waiting payments. Every copy builds the same transaction, so it does not matter who
           sends it.
         </p>
       </section>

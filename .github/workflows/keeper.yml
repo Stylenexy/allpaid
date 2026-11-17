@@ -3,6 +3,8 @@ name: keeper
 # so members get paid even when no jar page is open. Holds no keys.
 # Off until the repository variable KEEPER_ENABLED is set to "true"
 # (a 5-minute schedule would use up private-repository Actions minutes).
+permissions:
+  contents: read
 on:
   schedule:
     - cron: '*/5 * * * *'
