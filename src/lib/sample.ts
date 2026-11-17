@@ -3,34 +3,25 @@
 // sandbox can never be mistaken for a real payout.
 import { encodeCashAddress, hash160, utf8ToBin } from '@bitauth/libauth';
 import type { JarConfig, Member } from './jar';
+import { SAMPLE_SHAPE, type SampleMember } from './sample-shape';
 
 export function sampleAddress(word: string, prefix: 'bitcoincash' | 'bchtest' = 'bchtest'): string {
   return encodeCashAddress({ prefix, type: 'p2pkh', payload: hash160(utf8ToBin(`allpaid sample ${word}`)) }).address;
 }
 
-const wallet = (name: string, bps: number): Member => ({ name, bps, address: sampleAddress(name.toLowerCase()) });
+const toMember = (m: SampleMember): Member =>
+  m.jar
+    ? { name: m.name, bps: m.bps, address: '', jar: { name: m.jar.name, members: m.jar.members.map(toMember) } }
+    : { name: m.name, bps: m.bps, address: sampleAddress(m.name.toLowerCase()) };
 
 /**
  * A street band whose fourth share goes to its road crew's own jar.
  * One payment, two levels, seven wallets.
  */
 export const SAMPLE_BAND: JarConfig = {
-  name: 'Malioboro Night Band',
+  name: SAMPLE_SHAPE.name,
   net: 'sandbox',
-  members: [
-    wallet('Vocals', 3000),
-    wallet('Drums', 2500),
-    wallet('Sound', 2000),
-    {
-      name: 'Road crew',
-      bps: 2500,
-      address: '',
-      jar: {
-        name: 'Road crew',
-        members: [wallet('Manager', 4000), wallet('Stage', 2500), wallet('Driver', 2000), wallet('Photos', 1500)],
-      },
-    },
-  ],
+  members: SAMPLE_SHAPE.members.map(toMember),
 };
 
 /** Extra context for nested sample jars. The labels themselves are roles. */

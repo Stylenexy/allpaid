@@ -1,11 +1,11 @@
 import { lazy, Suspense } from 'react';
-import { SAMPLE_BAND } from '../../lib/sample';
+import { SAMPLE_SHAPE } from '../../lib/sample-shape';
 
 const CheatDemo = lazy(() => import('../LiveDemo').then((m) => ({ default: m.CheatDemo })));
 
 /** Section 5: attack the jar and watch the VM refuse. */
 export function CheatScene() {
-  const first = SAMPLE_BAND.members[0].name;
+  const first = SAMPLE_SHAPE.members[0].name;
   return (
     <section className="sec cheat-sec" id="cheat">
       <div className="wrap two-col">

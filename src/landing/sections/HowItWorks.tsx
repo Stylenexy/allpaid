@@ -1,5 +1,5 @@
 import { sats } from '../../lib/format';
-import { SPLIT_FEE } from '../../lib/jar';
+import { SPLIT_FEE } from '../../lib/shares';
 
 /** Section 3: the path of one payment. */
 export function HowItWorks() {
