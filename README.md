@@ -8,7 +8,7 @@
 
 One QR. Everyone gets paid.
 
-[![ci](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml/badge.svg)](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml) ![tests](https://img.shields.io/badge/tests-57%20passing-2ea44f) ![license](https://img.shields.io/badge/license-MIT-blue) ![owner keys](https://img.shields.io/badge/owner%20keys-0-2ea44f) [![Pay this team on BCH](public/badge.svg)](#embed-and-badge)
+[![ci](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml/badge.svg)](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml) ![tests](https://img.shields.io/badge/tests-61%20passing-2ea44f) ![license](https://img.shields.io/badge/license-MIT-blue) ![owner keys](https://img.shields.io/badge/owner%20keys-0-2ea44f) [![Pay this team on BCH](public/badge.svg)](#embed-and-badge)
 
 **[Live app](https://allpaid.vercel.app)** · **[Try it, no wallet](https://allpaid.vercel.app/try)** · **[Make a jar](https://allpaid.vercel.app/new)**
 
@@ -23,7 +23,7 @@ Built for **BCH BLAZE 2026, Mainnet Track**, November 2026. The contract has not
 ## Try it in 60 seconds
 
 1. **No wallet, no money.** Open [allpaid.vercel.app/try](https://allpaid.vercel.app/try) and press *Pay 0.001 BCH into the jar*. The page runs the real contract against an in-memory network: each split transaction is built by CashScript and accepted by the Bitcoin Cash VM (libauth) in your tab. The sample band jar pays three players and the road crew's own jar, which splits again: **one payment, two levels, seven wallets, two transactions.**
-2. **Cheat it.** Press *Now try to cheat it*, then *Pay 0.001 BCH and let the thief try first*. Before the honest split, the page broadcasts a transaction that sends the whole payment to the first member. The VM refuses it. The page shows the raw refusal and the contract line that caught it (`Allpaid.cash` line 32, *one output per member, no extra outputs*). Then the honest split goes through. On mainnet the same button sends the cheat to a real node.
+2. **Cheat it, two ways.** Press *Now try to cheat it*, pick a cheat, then *Pay 0.001 BCH and let the thief try first*. Before the honest split, the page broadcasts the thief's transaction: either the whole payment to the first member, or every member paid with the right total but two members' amounts swapped. The VM refuses both. The page shows the raw refusal and the contract line that caught it, with its code: line 32 (*one output per member, no extra outputs*) for the first, line 39 (*output 0 has the wrong amount*) for the swap. Then the honest split goes through. On mainnet or chipnet the same button sends the cheat to a real node.
 3. **Real mainnet.** Make a jar at `/new` with **Test with two of my own addresses** (the money comes back to you), or pay into any jar someone shares with you. Scan the QR with any Bitcoin Cash wallet, or press **Pay with WizardConnect** and approve in your wallet. Within a couple of seconds the split goes out; each line of the tree links to its transaction on the explorer. Close the tab and pay from your phone: the payment waits safely in the jar until any jar page or a keeper round sends the split.
 
 ## For judges: how each Mainnet Track requirement is met
@@ -34,16 +34,17 @@ Built for **BCH BLAZE 2026, Mainnet Track**, November 2026. The contract has not
 | WizardConnect integration | `@wizardconnect/react` 0.2.6 pairs a wallet over the relay; the app derives the wallet's addresses from the shared xpubs, finds its coins, builds the payment with CashScript and asks the wallet to sign it with `inputPaths` | [`wallet.ts`](src/lib/wallet.ts), [`PayPanel.tsx`](src/components/PayPanel.tsx). Wallet pairing tests: [Pending before submission](#pending-before-submission) |
 | Live demo a judge can open with one link | Static site, no account, no backend | [allpaid.vercel.app](https://allpaid.vercel.app), play money at [/try](https://allpaid.vercel.app/try) |
 | Banner on top of the home page: slides, repo, EMBER2026 address | Strip above the navigation, filled from one config file | [`Chrome.tsx`](src/components/Chrome.tsx) `Banner`, values in [`site.ts`](src/site.ts); the banner shows each link only once it is set (slides and EMBER2026 address: [pending](#pending-before-submission)) |
+| Real nodes judge every transaction, not only the in-tab VM | `npm run chipnet -- run` pays a two-level jar on chipnet, lets both cheats hit a chipnet node, then sends the splits and one keeper round | [`scripts/chipnet-proof.ts`](scripts/chipnet-proof.ts); transaction ids and node refusals in [`docs/CHIPNET-PROOF.md`](docs/CHIPNET-PROOF.md) (chipnet). Status: [pending](#pending-before-submission) until the test address is funded |
 | Original work | Written from scratch during the hackathon; first commit 17 November 2026 (`git log --reverse`). Prior concept work is listed under [Credits](#credits--prior-work) | git history |
 
 ## How it maps to the judging criteria
 
 | Criterion | What Allpaid does |
 |---|---|
-| **Innovation** | An address that is a whole team. Nested jars make a revenue waterfall out of plain payments: a festival pays a band, the band pays its crew, all from one scan. The page invites you to attack it and shows the network refusing. |
+| **Innovation** | An address that is a whole team. Nested jars make a revenue waterfall out of plain payments: a festival pays a band, the band pays its crew, all from one scan. The page invites you to attack it two ways and shows the network refusing each at a different contract line. |
 | **Design and usability** | The payer only scans and pays. The team sets up in one form, no account; nesting is pasting another jar's link as a member. The split tree lights up level by level with the amount and a link per transaction. Tested at 360 px. |
-| **Technical strength** | Covenant with native introspection: output count, recipients, exact amounts and token fields are all fixed by the contract; no owner key, no signature. Nested jars need no contract change: a jar's address is a P2SH32 locking bytecode like any other recipient. Splits are deterministic, so any device (or the keeper) can send them and all send the same transaction. 57 tests, all transactions checked by the BCH VM. |
-| **Business potential** | Free for teams. Event templates include Allpaid as a visible, opt-in 0.5% member; a hosted keeper with payout alerts is the paid plan for venues. See [Business model](#business-model). |
+| **Technical strength** | Covenant with native introspection: output count, recipients, exact amounts and token fields are all fixed by the contract; no owner key, no signature. Nested jars need no contract change: a jar's address is a P2SH32 locking bytecode like any other recipient. Splits are deterministic, so any device (or the keeper) can send them and all send the same transaction. 61 tests, all transactions checked by the BCH VM. |
+| **Business potential** | Free for teams. Event templates can include Allpaid as a visible, opt-in 0.5% member written into the address; a hosted keeper with payout alerts is the paid plan for venues. Why one address instead of a multi-output payment: any wallet or exchange can pay it, and the cut is checkable in the address itself. See [Business model](#business-model). |
 
 ## How it works
 
@@ -77,20 +78,20 @@ The contract does not split on arrival (Bitcoin Cash has no such hook); it makes
 
 Measured split sizes: 441 bytes for 2 members, 502 for 3, 561 for 4, so the fixed 1,000-sat fee pays 1.8 to 2.3 sat/byte, above the 1 sat/byte relay minimum. A jar refuses a share that the next level could not split: the app computes the minimum payment per level (fee plus 1,000 sats per wallet, recursively) and shows it on each jar page.
 
-**Code map.** Split arithmetic and the share check: [`shares.ts`](src/lib/shares.ts) (`splitPot` line 23, `minPaymentFor` line 59, `sharesProblem` line 86). Jar config, URL encoding and nesting rules: [`jar.ts`](src/lib/jar.ts) (`validateJar` line 120). Contract, nesting and transactions: [`chain.ts`](src/lib/chain.ts) (`resolveJar` line 64, `jarTree` line 85, `buildDistribute` line 125, `buildCheat` line 147, `explainCheat` line 158). The watcher and the cascade: [`engine.ts`](src/lib/engine.ts) (`JarEngine` line 78, `once` line 159, `split` line 261). WizardConnect: [`wallet.ts`](src/lib/wallet.ts) (`scanWallet` line 91, `payWithWallet` line 102). Keeper: [`keeper/cli.ts`](keeper/cli.ts).
+**Code map.** Split arithmetic and the share check: [`shares.ts`](src/lib/shares.ts) (`splitPot` line 23, `minPaymentFor` line 59, `sharesProblem` line 86). Jar config, URL encoding and nesting rules: [`jar.ts`](src/lib/jar.ts) (`validateJar` line 120). Contract, nesting and transactions: [`chain.ts`](src/lib/chain.ts) (`resolveJar` line 64, `jarTree` line 85, `buildDistribute` line 125, `cheatOutputs` line 163 with both cheats, `buildCheat` line 185, `explainCheat` line 193). The watcher and the cascade: [`engine.ts`](src/lib/engine.ts) (`JarEngine` line 83, `once` line 165, `split` line 267). WizardConnect: [`wallet.ts`](src/lib/wallet.ts) (`scanWallet` line 91, `payWithWallet` line 102). Keeper: [`keeper/cli.ts`](keeper/cli.ts).
 
 ## Tests
 
 ```bash
 npm ci
-npm test        # compiles the contract, then 57 tests
+npm test        # compiles the contract, then 61 tests
 npm run build   # type-check and production build
 ```
 
 Every transaction in the tests goes through CashScript's `MockNetworkProvider`, which evaluates it with the Bitcoin Cash VM against the real locking bytecode, like a node.
 
-- [`test/allpaid.test.ts`](test/allpaid.test.ts): pays 2, 3 and 4 members their exact shares, fee exactly 1,000 sats and at least 1 sat/byte; rounding (123,457 sats at 33.33/33.33/33.34% gives 40,814 + 40,814 + 40,829); the same split on two devices has the same txid; refuses the whole pot to one member, a redirected output, swapped amounts, a bigger fee, an extra output, two payments at once, a payout under 1,000 sats, a merge that leaves the jar or skims. **Split trees:** the band jar pays the crew jar at its P2SH32 locking bytecode (`aa20…87`), the crew jar splits again, seven wallets receive `payment − 2 × fee`; refuses paying the crew's share to a wallet instead; a three-level waterfall (organiser, band, crew) delivers `payment − 3 × fee`.
-- [`test/engine.test.ts`](test/engine.test.ts): the watcher splits a payment and then the nested jar on its own (one payment, two levels, seven wallets); the thief goes first, is refused, and the refusal names the contract rule.
+- [`test/allpaid.test.ts`](test/allpaid.test.ts): pays 2, 3 and 4 members their exact shares, fee exactly 1,000 sats and at least 1 sat/byte; rounding (123,457 sats at 33.33/33.33/33.34% gives 40,814 + 40,814 + 40,829); the same split on two devices has the same txid; refuses the whole pot to one member (line 32), the swap cheat that pays every member the right total but trades two amounts (line 39, then the honest split still goes through), a redirected output, a bigger fee, an extra output, two payments at once, a payout under 1,000 sats, a merge that leaves the jar or skims. **Split trees:** the band jar pays the crew jar at its P2SH32 locking bytecode (`aa20…87`), the crew jar splits again, seven wallets receive `payment − 2 × fee`; refuses paying the crew's share to a wallet instead; a three-level waterfall (organiser, band, crew) delivers `payment − 3 × fee`.
+- [`test/engine.test.ts`](test/engine.test.ts): the watcher splits a payment and then the nested jar on its own (one payment, two levels, seven wallets); the thief goes first with either cheat, is refused, and the refusal names the contract rule, its line and its code.
 - [`test/jar.test.ts`](test/jar.test.ts): jar links (round trip, nested, broken links), validation (wrong network, address typos, duplicates, shares, three levels allowed and a fourth refused), minimum payments for nested jars.
 - [`test/embed.test.ts`](test/embed.test.ts): `data-allpaid` and legacy `data-jar`, attribute precedence, custom labels, invalid codes and missing script elements.
 - [`test/sdk.test.ts`](test/sdk.test.ts): the SDK refuses to make an address, a contract or a watcher for a jar whose shares miss 10,000 basis points (at any level of nesting) or whose member count the contract cannot pay; WizardConnect coin discovery follows used addresses with a gap limit of 20 and stops at 100 per path.
@@ -106,6 +107,16 @@ npm run keeper -- --watch --every 30 "https://allpaid.vercel.app/jar#<code>"
 The keeper looks at every jar in the tree once, sends the split for anything waiting (and the nested splits after it), and prints the transactions. It holds no keys: the covenant only allows the honest split and pays its own fee. [`.github/workflows/keeper.yml`](.github/workflows/keeper.yml) runs it every 5 minutes for the jars in [`keeper/jars.txt`](keeper/jars.txt) once the repository variable `KEEPER_ENABLED` is `true`. The package declares an `allpaid-keeper` bin; it is not published to npm yet, so run it from a clone. The standalone CLI package will use `npx allpaid-keeper` after publication.
 
 Honest timing: with the jar page open the split follows the payment within seconds; with every page closed it waits for the keeper's next round (up to about 5 minutes on the schedule, GitHub cron is best effort).
+
+## Chipnet proof
+
+```bash
+npm run chipnet -- address      # makes the test key once (.env.chipnet.local, ignored by git) and shows the funding address
+npm run chipnet -- run --dry    # every step against the in-memory network, no coins needed
+npm run chipnet -- run          # the same steps on chipnet, judged by real nodes
+```
+
+The run pays a jar shaped like the sample band (three wallets and a crew jar of four), lets the thief try both cheats first, sends the split and the nested split, then makes a third payment and runs one keeper round (`npm run keeper -- <jar link>`) with no page open. It writes every transaction id, the node's refusals and the keeper output to [`docs/CHIPNET-PROOF.md`](docs/CHIPNET-PROOF.md). All wallets are keys made for the run; test coins only, mainnet is never touched.
 
 ## Embed and badge
 
@@ -137,7 +148,8 @@ The SDK entry point [`src/sdk.ts`](src/sdk.ts) exports what the site and the kee
 
 - **Free for teams.** Making a jar and paying into it stays free. The contract has no owner key and takes no cut.
 - **Revenue.** Event templates include Allpaid as a visible, opt-in 0.5% member: it is written into the address, so every member sees it before anyone agrees. A hosted keeper with payout alerts for venues is the paid plan.
-- **First users.** Teams already paid in BCH: multi-host podcasts, tip pools at venues that take BCH, FundMe teams. One line of HTML puts their jar on their page.
+- **Why one address and not a multi-output payment.** Any wallet or exchange can pay one address, while an exchange withdrawal, for one, goes to a single address. And the cut is checkable in the address itself: it is computed from the members and shares, so nobody can change it after the QR is printed.
+- **First users.** Teams already paid in BCH: multi-host podcasts, tip pools at venues that take BCH, team-run campaigns. One line of HTML puts their jar on their page.
 
 ## Roadmap
 
@@ -148,6 +160,7 @@ Event templates, a hosted keeper with payout alerts, shares shown in fiat at pay
 These wait for the author and are not done yet:
 
 - **Mainnet run.** A funded payment into a jar, with the payment and split transaction ids added to the requirements table above.
+- **Chipnet run.** The script and its in-memory dry run are done (`npm run chipnet -- run --dry`). The chipnet test address needs test coins from a faucet (the faucets ask for a CAPTCHA, so a person requests them); then `npm run chipnet -- run` writes the transaction ids to [`docs/CHIPNET-PROOF.md`](docs/CHIPNET-PROOF.md).
 - **Mainnet demo jar.** Member addresses for a public demo jar, then its link in `SITE.demoJarPath` ([`site.ts`](src/site.ts)) so the home page shows a real payment QR.
 - **WizardConnect pairing** tested with Selene, Paytaca and Cashonize.
 - **Slides** (BLAZE Widget Factory template) and the **demo video**: links in the header above and in `SITE.slidesUrl`.
