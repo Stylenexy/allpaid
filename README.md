@@ -30,11 +30,11 @@ Built for **BCH BLAZE 2026, Mainnet Track**, November 2026. The contract has not
 
 | Requirement | How Allpaid meets it | Where to check |
 |---|---|---|
-| Anyone can make a useful BCH mainnet transaction with the app | Pay into a jar from any wallet (BIP21 QR) or through WizardConnect; the app then broadcasts the split, a second mainnet transaction with one output per member, and one more per nested jar | [`PayPanel.tsx`](src/components/PayPanel.tsx), [`engine.ts`](src/lib/engine.ts). Mainnet transaction ids: listed under [Pending before submission](#pending-before-submission) until the first funded run |
-| WizardConnect integration | `@wizardconnect/react` 0.2.6 pairs a wallet over the relay; the app derives the wallet's addresses from the shared xpubs, finds its coins, builds the payment with CashScript and asks the wallet to sign it with `inputPaths` | [`wallet.ts`](src/lib/wallet.ts), [`PayPanel.tsx`](src/components/PayPanel.tsx). Wallet pairing tests: [Pending before submission](#pending-before-submission) |
+| Anyone can make a useful BCH mainnet transaction with the app | Pay into a jar from any wallet (BIP21 QR) or through WizardConnect; the app then broadcasts the split, a second mainnet transaction with one output per member, and one more per nested jar | [`PayPanel.tsx`](src/components/PayPanel.tsx), [`engine.ts`](src/lib/engine.ts). Mainnet transaction ids: [`docs/MAINNET-PROOF.md`](docs/MAINNET-PROOF.md) (first funded run pending) |
+| WizardConnect integration | `@wizardconnect/react` 0.2.6 pairs a wallet over the relay; the app derives the wallet's addresses from the shared xpubs, finds its coins, builds the payment with CashScript and asks the wallet to sign it with `inputPaths` | [`wallet.ts`](src/lib/wallet.ts), [`PayPanel.tsx`](src/components/PayPanel.tsx). Wallet pairing with Selene: pending, see [Pending](#pending-before-submission). [`/new`](https://allpaid.vercel.app/new) can also fill a jar's members from a paired wallet |
 | Live demo a judge can open with one link | Static site, no account, no backend | [allpaid.vercel.app](https://allpaid.vercel.app), play money at [/try](https://allpaid.vercel.app/try) |
-| Banner on top of the home page: slides, repo, EMBER2026 address | Strip above the navigation, filled from one config file | [`Chrome.tsx`](src/components/Chrome.tsx) `Banner`, values in [`site.ts`](src/site.ts); the banner shows each link only once it is set (slides and EMBER2026 address: [pending](#pending-before-submission)) |
-| Real nodes judge every transaction, not only the in-tab VM | `npm run chipnet -- run` pays a two-level jar on chipnet, lets both cheats hit a chipnet node, then sends the splits and one keeper round | [`scripts/chipnet-proof.ts`](scripts/chipnet-proof.ts); transaction ids and node refusals in [`docs/CHIPNET-PROOF.md`](docs/CHIPNET-PROOF.md) (chipnet). Status: [pending](#pending-before-submission) until the test address is funded |
+| Banner on top of the home page: slides, repo, EMBER2026 address | Strip above the navigation, filled from one config file | [`Chrome.tsx`](src/components/Chrome.tsx) `Banner`, values in [`site.ts`](src/site.ts); the banner shows each link only once it is set (EMBER2026 address: live; slides link: pending) |
+| Real nodes judge every transaction, not only the in-tab VM | `npm run mainnet -- <jar link>` waits for a payment into a mainnet jar, sends both cheats to mainnet nodes (refused at lines 32 and 39), then sends the split and the nested split. No key is involved: a cheat is a transaction the network refuses. `npm run mainnet -- --dry` runs the same steps in memory | [`scripts/mainnet-proof.ts`](scripts/mainnet-proof.ts); results in [`docs/MAINNET-PROOF.md`](docs/MAINNET-PROOF.md). Optional chipnet version: [`scripts/chipnet-proof.ts`](scripts/chipnet-proof.ts) |
 | Original work | Written from scratch during the hackathon; first commit 17 November 2026 (`git log --reverse`). Prior concept work is listed under [Credits](#credits--prior-work) | git history |
 
 ## How it maps to the judging criteria
@@ -163,14 +163,7 @@ Event templates, a hosted keeper with payout alerts, shares shown in fiat at pay
 
 ## Pending before submission
 
-These wait for the author and are not done yet:
-
-- **Mainnet run.** A funded payment into a jar, with the payment and split transaction ids added to the requirements table above.
-- **Chipnet run.** The script and its in-memory dry run are done (`npm run chipnet -- run --dry`). The chipnet test address needs test coins from a faucet (the faucets ask for a CAPTCHA, so a person requests them); then `npm run chipnet -- run` writes the transaction ids to [`docs/CHIPNET-PROOF.md`](docs/CHIPNET-PROOF.md).
-- **Mainnet demo jar.** Member addresses for a public demo jar, then its link in `SITE.demoJarPath` ([`site.ts`](src/site.ts)) so the home page shows a real payment QR.
-- **WizardConnect pairing** tested with Selene, Paytaca and Cashonize.
-- **Slides** (BLAZE Widget Factory template) and the **demo video**: links in the header above and in `SITE.slidesUrl`.
-- **Public repository.** The source link in the banner points to this repository, which is private until submission.
+Waiting on the author: the first funded mainnet run (transaction ids into [`docs/MAINNET-PROOF.md`](docs/MAINNET-PROOF.md) and the table above), WizardConnect pairing with Selene, a public demo jar on the home page, the slides link in the banner, the demo video, and making this repository public.
 
 ## Run it locally
 
