@@ -15,6 +15,8 @@ import { contractArgs, splitPot, subConfig, SPLIT_FEE, type JarConfig, type Memb
 
 export type AllpaidContract = Contract<typeof artifact>;
 
+// Port 50004 (encrypted WebSocket). Keep in sync with connect-src in vercel.json,
+// which also lists the two WizardConnect relays.
 const ELECTRUM_HOSTS: Record<Exclude<Net, 'sandbox'>, string[]> = {
   mainnet: ['bch.imaginary.cash', 'electroncash.de', 'bch.loping.net'],
   chipnet: ['chipnet.bch.ninja', 'chipnet.imaginary.cash'],
