@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useWizardConnect, WizardConnectQRDialog } from '@wizardconnect/react';
 import {
   decodeJar,
   encodeJar,
@@ -15,7 +16,8 @@ import {
   type Net,
   type SubJar,
 } from '../lib/jar';
-import { jarAddress } from '../lib/chain';
+import { errorText, getProvider, jarAddress } from '../lib/chain';
+import { freshReceiveAddresses, receiveAddresses } from '../lib/wallet';
 import { bch } from '../lib/format';
 import { navigate, onLinkClick } from '../router';
 import { TinMark } from '../components/TinMark';
@@ -41,6 +43,17 @@ const toBps = (pct: string) => {
   return Number.isFinite(v) ? Math.round(v * 100) : NaN;
 };
 
+/** Apply to the latest rows so wallet lookups never replace a member's own edits. */
+export function fillWalletRows(rows: Row[], addresses: string[]): Row[] {
+  const occupied = new Set(rows.filter((r) => !r.jar).map((r) => r.address.trim().toLowerCase()));
+  const available = addresses.filter((address) => !occupied.has(address.toLowerCase()));
+  return rows.map((row, i) => {
+    if (row.jar || row.address.trim()) return row;
+    const address = available.shift();
+    return address ? { ...row, address, name: row.name.trim() ? row.name : `My wallet ${i + 1}` } : row;
+  });
+}
+
 export function Create() {
   const [name, setName] = useState('');
   const [net, setNet] = useState<Exclude<Net, 'sandbox'>>('mainnet');
@@ -50,6 +63,51 @@ export function Create() {
     { name: '', address: '', pct: '' },
   ]));
   const [touched, setTouched] = useState(false);
+  const icon = useMemo(() => `${location.origin}/icon-192.png`, []);
+  const wc = useWizardConnect({ dappName: 'Allpaid', dappIcon: icon, sessionKey: 'allpaid-wizardconnect' });
+  const [walletFill, setWalletFill] = useState(false);
+  const [walletProblem, setWalletProblem] = useState('');
+  const [walletFilled, setWalletFilled] = useState(false);
+
+  useEffect(() => {
+    if (!walletFill) return;
+    if (wc.error || wc.state === 'disconnected') {
+      setWalletProblem('Could not pair with your wallet. Please try again.');
+      setWalletFill(false);
+      return;
+    }
+    if (wc.state !== 'connected' || !wc.manager) return;
+    const manager = wc.manager;
+    let alive = true;
+    (async () => {
+      try {
+        receiveAddresses(manager, net, 1);
+        const provider = await getProvider(net);
+        const addresses = await freshReceiveAddresses(manager, net, provider, MAX_MEMBERS);
+        if (!alive) return;
+        // Recheck the current rows after scanning: edits made while waiting take priority.
+        setRows((current) => fillWalletRows(current, addresses));
+        setWalletFilled(true);
+      } catch (error) {
+        if (alive) setWalletProblem(`Could not fill addresses from your wallet. ${errorText(error)}`);
+      } finally {
+        if (alive) setWalletFill(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [walletFill, wc.state, wc.manager, wc.error, net]);
+
+  const fillFromWallet = () => {
+    setWalletProblem('');
+    setWalletFilled(false);
+    setWalletFill(true);
+    if (wc.state === 'connected') return;
+    try {
+      if (wc.connect()) return;
+    } catch { /* Show the same retry message if pairing cannot start. */ }
+    setWalletFill(false);
+    setWalletProblem('Could not pair with your wallet. Please try again.');
+  };
 
   const config: JarConfig = useMemo(
     () => ({
@@ -224,6 +282,11 @@ export function Create() {
           <button type="button" className="btn btn-small" onClick={useOwnTwo}>
             Test with two of my own addresses
           </button>
+          {(net === 'mainnet' || net === 'chipnet') && (
+            <button type="button" className="btn btn-small" onClick={fillFromWallet} disabled={walletFill || wc.state === 'connecting' || wc.state === 'reconnecting'}>
+              {walletFill ? (wc.state === 'connected' ? 'Finding fresh addresses...' : 'Waiting for your wallet...') : 'Fill from my wallet (WizardConnect)'}
+            </button>
+          )}
           <button type="button" className="btn btn-small" onClick={add} disabled={rows.length >= MAX_MEMBERS}>
             Add a member
           </button>
@@ -234,6 +297,38 @@ export function Create() {
             Total {(total / 100).toFixed(2).replace(/\.00$/, '')}%
           </p>
         </div>
+        {(net === 'mainnet' || net === 'chipnet') && (
+          <>
+            <p className="hint">Your wallet shares its public keys only. The split pays these addresses, so the money comes back to you.</p>
+            {walletFilled && <p className="hint" role="status">Empty member rows filled from your wallet.</p>}
+            {(walletProblem || wc.error) && <p className="problem" role="alert">{walletProblem || 'Could not pair with your wallet. Please try again.'}</p>}
+            {wc.uri && wc.qrUri && (
+              <WizardConnectQRDialog
+                show={wc.state === 'connecting'}
+                onClose={() => { setWalletFill(false); void wc.disconnect(); }}
+                uri={wc.uri}
+                qrUri={wc.qrUri}
+                title="Connect a wallet"
+                subtitle="Scan this with a wallet that supports WizardConnect, or copy the link into a desktop wallet."
+                theme={{
+                  backdropColor: 'rgba(0, 0, 0, 0.72)',
+                  dialogBackground: 'var(--surface-1)',
+                  headerBackground: 'var(--surface-1)',
+                  titleColor: 'var(--text)',
+                  subtitleColor: 'var(--text-soft)',
+                  qrForeground: 'var(--qr-ink)',
+                  qrBackground: 'var(--qr-bg)',
+                  uriRowBackground: 'var(--bg)',
+                  uriTextColor: 'var(--text-soft)',
+                  borderColor: 'var(--line-strong)',
+                  closeButtonColor: 'var(--text-soft)',
+                  copyButtonColor: 'var(--money)',
+                  qrSize: 260,
+                }}
+              />
+            )}
+          </>
+        )}
         {problemFor('bps') && <p className="problem">{problemFor('bps')}</p>}
         {problemFor('members') && <p className="problem">{problemFor('members')}</p>}
 

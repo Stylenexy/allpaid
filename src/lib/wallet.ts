@@ -37,6 +37,18 @@ function addressFor(manager: DappConnectionManager, child: number, index: number
   return encodeCashAddress({ prefix: prefixFor(net), type: 'p2pkh', payload: hash160(pubkey) }).address;
 }
 
+/** Derive receive addresses from the wallet's shared public keys, without network access. */
+export function receiveAddresses(manager: DappConnectionManager, net: Net, count: number, start = 0): string[] {
+  if (!Number.isSafeInteger(count) || count < 0 || !Number.isSafeInteger(start) || start < 0 || !Number.isSafeInteger(start + count)) {
+    throw new Error('The address count and starting index must be non-negative integers.');
+  }
+  return Array.from({ length: count }, (_, offset) => {
+    const address = addressFor(manager, 0, start + offset, net);
+    if (!address) throw new Error('The wallet did not share receive public keys. Try pairing again.');
+    return address;
+  });
+}
+
 type HistoryProvider = NetworkProvider & {
   performRequest(name: string, ...parameters: (string | number | boolean)[]): Promise<unknown>;
 };
@@ -60,6 +72,23 @@ async function probe(provider: NetworkProvider, address: string): Promise<{ used
   }
   const coins = await provider.getUtxos(address);
   return { used: coins.length > 0, coins };
+}
+
+/** Find unused receive addresses inside the wallet's discovery gap. Provider errors are not evidence of freshness. */
+export async function freshReceiveAddresses(manager: DappConnectionManager, net: Net, provider: NetworkProvider, count: number): Promise<string[]> {
+  if (!Number.isSafeInteger(count) || count < 0 || count > GAP_LIMIT) {
+    throw new Error(`Request between 0 and ${GAP_LIMIT} receive addresses to stay within the wallet's gap limit.`);
+  }
+  const addresses: string[] = [];
+  let unused = 0;
+  for (let index = 0; index < MAX_SCAN && unused < GAP_LIMIT && addresses.length < count; index += 1) {
+    const [address] = receiveAddresses(manager, net, 1, index);
+    const { used } = await probe(provider, address);
+    unused = used ? 0 : unused + 1;
+    if (!used) addresses.push(address);
+  }
+  if (addresses.length !== count) throw new Error('Could not find enough unused receive addresses within the wallet scan limit.');
+  return addresses;
 }
 
 /** Walk one path (receive or change) until GAP_LIMIT unused addresses in a row, or MAX_SCAN. */
