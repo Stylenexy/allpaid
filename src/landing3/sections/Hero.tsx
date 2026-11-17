@@ -97,7 +97,14 @@ export function Hero() {
           <div className="v3-hero-plate" style={{ '--v3-hero-ratio': pic.ratio } as CSSProperties}>
             <div className="v3-hero-enter">
               <div className="v3-hero-drift">
-                <img className="v3-hero-img" src={pic.src} alt={pic.alt} decoding="async" fetchPriority="high" onError={() => !fallback && setFallback(true)} />
+                <picture>
+                  <source
+                    type="image/avif"
+                    srcSet={`${pic.src.replace('.webp', '-md.avif')} 1280w, ${pic.src.replace('.webp', '-xl.avif')} 2560w`}
+                    sizes="(orientation: portrait) 240vh, 100vw"
+                  />
+                  <img className="v3-hero-img" src={pic.src} alt={pic.alt} decoding="async" fetchPriority="high" onError={() => !fallback && setFallback(true)} />
+                </picture>
                 {!fallback && (
                   <>
                     <div className="v3-hero-shaft" aria-hidden="true">

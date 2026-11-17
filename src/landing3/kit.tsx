@@ -32,7 +32,9 @@ export function useMotion(ref: RefObject<HTMLElement | null>, build: (reduced: b
 export function Wall({ name, alt, className = '', priority = false, position = 'center' }: { name: string; alt: string; className?: string; priority?: boolean; position?: string }) {
   return (
     <picture className={`v3-wall ${className}`}>
-      {/* Full-bleed: a portrait phone crops a wide photo, so pick by covered width, not screen width. */}
+      {/* Full-bleed: a portrait phone crops a wide photo, so pick by covered width, not screen width.
+          AVIF first (sharper at a smaller size, 2560 px for large screens), WebP as the fallback. */}
+      <source type="image/avif" srcSet={`/v3/${name}-md.avif 1280w, /v3/${name}-xl.avif 2560w`} sizes="(orientation: portrait) 240vh, 100vw" />
       <img
         src={`/v3/${name}.webp`}
         srcSet={`/v3/${name}-sm.webp 900w, /v3/${name}.webp 1920w`}

@@ -132,8 +132,8 @@ export function How() {
     const wall = el.querySelector('.v3-how-wall');
     gsap.fromTo(
       el.querySelector('.v3-how-wall .v3-wall'),
-      { scale: 1.32, transformOrigin: '50% 0%' },
-      { scale: 1, ease: 'none', scrollTrigger: { trigger: wall, start: 'top 85%', end: 'bottom 30%', scrub: 0.6 } },
+      { scale: 1.16, transformOrigin: '50% 62%' },
+      { scale: 1, ease: 'none', scrollTrigger: { trigger: wall, start: 'top 85%', end: 'bottom 30%', scrub: 1.2 } },
     );
 
     // The three steps arrive in order.
@@ -152,24 +152,24 @@ export function How() {
       const q = (s: string) => svg.querySelectorAll(s);
       const tl = gsap.timeline({
         defaults: { ease: 'none' },
-        scrollTrigger: { trigger: svg, start: 'top 72%', end: 'bottom 80%', scrub: 0.6 },
+        scrollTrigger: { trigger: svg, start: 'top 78%', end: 'bottom 52%', scrub: 1.4 },
       });
       const draw = (s: string, at: number, duration: number) => tl.fromTo(q(s), { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration }, at);
       const show = (s: string, at: number, stagger = 0) => tl.fromTo(q(s), { autoAlpha: 0, y: 6 }, { autoAlpha: 1, y: 0, duration: 0.4, stagger }, at);
       show('.v3-how-src', 0);
-      draw('.v3-how-trunk', 0.2, 1.2);
+      draw('.v3-how-trunk', 0.1, 1.3);
       draw('.v3-how-slot1', 1.3, 0.4);
       show('.v3-how-slot1-lab', 1.3);
       draw('.v3-how-fee1', 1.7, 0.4);
       show('.v3-how-fee1-lab', 1.8);
-      draw('.v3-how-fan1', 1.8, 1.5);
+      draw('.v3-how-fan1', 1.7, 1.6);
       show('.v3-how-lab1', 3.1, 0.08);
-      draw('.v3-how-crew', 3.6, 1);
-      draw('.v3-how-slot2', 4.6, 0.35);
+      draw('.v3-how-crew', 3.2, 1.4);
+      draw('.v3-how-slot2', 4.55, 0.35);
       show('.v3-how-slot2-lab', 4.6);
       draw('.v3-how-fee2', 4.95, 0.4);
       show('.v3-how-fee2-lab', 5.05);
-      draw('.v3-how-fan2', 5.05, 1.5);
+      draw('.v3-how-fan2', 5.0, 1.7);
       show('.v3-how-lab2', 6.35, 0.08);
       tl.to({}, { duration: 0.4 });
     });

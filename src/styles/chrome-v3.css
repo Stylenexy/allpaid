@@ -1,0 +1,96 @@
+/*
+ * Premium chrome for every page: the BCH BLAZE banner as a quiet glass strip,
+ * and the Moto-style nav. Loaded globally after app.css.
+ */
+.banner {
+  background: #060708;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(242, 243, 243, 0.62);
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+}
+.banner-in {
+  width: min(100% - 2 * clamp(20px, 4vw, 64px), 1440px);
+  margin-inline: auto;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+}
+.banner .banner-tag {
+  font-family: 'Inter Tight', 'Archivo', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #f2f3f3;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(10, 193, 142, 0.45);
+  background: rgba(10, 193, 142, 0.08);
+}
+.banner-links { display: flex; align-items: center; gap: 6px 22px; flex-wrap: wrap; }
+.banner a,
+.banner-copy {
+  color: rgba(242, 243, 243, 0.72);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.banner a:hover, .banner-copy:hover { color: #fff; }
+.banner a:focus-visible, .banner-copy:focus-visible { outline: 2px solid #0ac18e; outline-offset: 3px; border-radius: 6px; }
+.banner-arrow { display: inline-block; margin-left: 4px; font-size: 0.9em; opacity: 0.6; transition: transform 0.25s; }
+.banner a:hover .banner-arrow { transform: translate(2px, -2px); opacity: 1; }
+.banner-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 4px 3px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  font-size: inherit;
+}
+.banner-copy .mono { color: #f2f3f3; font-weight: 500; }
+.banner-copied {
+  font-size: 11px;
+  font-weight: 700;
+  color: #04261b;
+  background: #0ac18e;
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+@media (max-width: 560px) {
+  .banner-in { justify-content: center; }
+  .banner-copy-label { display: none; }
+}
+
+/* Nav: centred on every page (the old .wrap width did not apply to the grid). */
+.nav--v3 .nav-in { margin-inline: auto; }
+
+/* Moto-style nav on the landing: transparent over the scenes, centred links, pill on the right.
+   The landing slides up under the sticky nav so the hero runs full-bleed behind it. */
+.nav--v3 { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; transition: background .4s, color .4s; }
+.nav--v3 .nav-in { width: min(100% - 2 * clamp(20px, 4vw, 64px), 1440px); min-height: 72px; display: grid; grid-template-columns: 1fr auto auto 1fr; column-gap: 1.6rem; }
+.nav--v3 .nav-links { display: contents; }
+.nav--v3 .nav-link { color: rgba(242,243,243,.72); font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', sans-serif; font-weight: 600; }
+.nav--v3 .nav-link:hover { color: #fff; background: transparent; }
+.nav--v3 .btn { justify-self: end; grid-column: 4; border-radius: 999px; background: #e6e8e8; color: #0a0b0c; min-height: 44px; padding: 0 1.4rem; font-weight: 600; border: 0; }
+.nav--v3 .btn:hover { background: #fff; }
+.nav--v3.is-scrolled { background: rgba(10,11,12,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.nav--v3.on-light { background: rgba(255,255,255,.72); }
+.nav--v3.on-light .logo-word, .nav--v3.on-light .nav-link { color: #0e1011; }
+.nav--v3.on-light .btn { background: #0e1011; color: #fff; }
+@media (max-width: 760px) {
+  .nav--v3 .nav-in { grid-template-columns: 1fr auto; }
+  .nav--v3 .nav-link { display: none; }
+  .nav--v3 .btn { grid-column: 2; grid-row: 1; }
+}
+
+
+/* Inner pages: the nav sits on glass from the start. */
+.nav--v3.nav--solid { background: rgba(10,11,12,.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,.05); }

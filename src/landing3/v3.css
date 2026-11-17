@@ -118,25 +118,7 @@ html.v3-has-cursor .v3, html.v3-has-cursor .v3 a, html.v3-has-cursor .v3 button 
   .v3-pill, .v3-cursor > span { transition: none; }
 }
 
-/* Moto-style nav on the landing: transparent over the scenes, centred links, pill on the right.
-   The landing slides up under the sticky nav so the hero runs full-bleed behind it. */
-.nav--v3 { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; transition: background .4s, color .4s; }
-.nav--v3 .nav-in { width: min(100% - 2 * clamp(20px, 4vw, 64px), 1440px); min-height: 72px; display: grid; grid-template-columns: 1fr auto auto 1fr; column-gap: 1.6rem; }
-.nav--v3 .nav-links { display: contents; }
-.nav--v3 .nav-link { color: rgba(242,243,243,.72); font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', sans-serif; font-weight: 600; }
-.nav--v3 .nav-link:hover { color: #fff; background: transparent; }
-.nav--v3 .btn { justify-self: end; grid-column: 4; border-radius: 999px; background: #e6e8e8; color: #0a0b0c; min-height: 44px; padding: 0 1.4rem; font-weight: 600; border: 0; }
-.nav--v3 .btn:hover { background: #fff; }
-.nav--v3.is-scrolled { background: rgba(10,11,12,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
-.nav--v3.on-light { background: rgba(255,255,255,.72); }
-.nav--v3.on-light .logo-word, .nav--v3.on-light .nav-link { color: #0e1011; }
-.nav--v3.on-light .btn { background: #0e1011; color: #fff; }
-.landing-v3 { margin-top: -72px; }
-@media (max-width: 760px) {
-  .nav--v3 .nav-in { grid-template-columns: 1fr auto; }
-  .nav--v3 .nav-link { display: none; }
-  .nav--v3 .btn { grid-column: 2; grid-row: 1; }
-}
-
 /* base.css left-aligns and hyphenates every paragraph; the landing sets its own. */
 .v3 p { text-align: inherit; hyphens: manual; -webkit-hyphens: manual; }
+
+.landing-v3 { margin-top: -72px; }

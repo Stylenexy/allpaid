@@ -74,3 +74,13 @@
   .v3-stack-body { margin-top: -2vw; padding: 0 var(--v3-pad) 104px; }
   .v3-stack-list { max-width: none; font-size: clamp(1.9rem, 8.6vw, 2.6rem); }
 }
+
+/* Readability (Dex 18 Nov): smaller type, one line per promise, real air between them. */
+.v3-stack .v3-stack-list { font-size: clamp(1.7rem, 3.1vw, 3.9rem); line-height: 1.04; max-width: 72%; }
+.v3-stack .v3-stack-line { white-space: nowrap; text-wrap: nowrap; }
+.v3-stack .v3-stack-line + .v3-stack-line { margin-top: 0.62em; }
+@media (max-width: 760px) {
+  .v3-stack .v3-stack-list { max-width: 100%; font-size: clamp(1.45rem, 7vw, 2.1rem); }
+  .v3-stack .v3-stack-line { white-space: normal; }
+  .v3-stack .v3-stack-line + .v3-stack-line { margin-top: 0.7em; }
+}

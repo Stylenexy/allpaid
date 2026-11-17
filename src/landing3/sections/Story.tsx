@@ -44,11 +44,16 @@ export function Story() {
             <br />
             No treasurer.
           </Caps>
-          <Lede className="v3-story-lede">
-            In Indonesia a band passes a kencleng round the crowd. At the end of the night one person carries it home, counts it, and pays the others.
-            Allpaid moves the counting into the money: the QR points at a covenant that lets coins out one way only, in fixed shares, to every member at
-            once.
-          </Lede>
+          <div className="v3-story-text">
+            <Lede className="v3-story-p">
+              <strong>In Indonesia, a band passes a kencleng round the crowd.</strong> At the end of the night one person carries it home,
+              counts it, and pays the others.
+            </Lede>
+            <Lede className="v3-story-p">
+              <strong>Allpaid moves the counting into the money.</strong> The QR points at a covenant that lets coins out one way only: in fixed
+              shares, to every member, at once.
+            </Lede>
+          </div>
         </div>
         <div className="v3-story-stage">
           <div className="v3-story-zoom">

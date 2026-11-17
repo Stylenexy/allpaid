@@ -65,3 +65,9 @@
   .v3-how-svg--wide { display: none; }
   .v3-how-svg--narrow { display: block; }
 }
+
+/* The coin stream enters from white: the photo's top edge fades into the page (Dex: coins cut off). */
+.v3-how .v3-how-wall::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0) 26%), linear-gradient(0deg, #fff 0%, rgba(255,255,255,0) 14%); }
+.v3-scene.v3-how { background: var(--v3-paper); }
+.v3-how .v3-how-wall .v3-wall img { object-fit: contain; }

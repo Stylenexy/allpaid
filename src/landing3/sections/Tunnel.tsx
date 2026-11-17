@@ -173,6 +173,15 @@ export function Tunnel() {
         .to('.v3-tunnel-copy', { autoAlpha: 1, duration: 0.02 }, 0.76)
         .fromTo(lines, { yPercent: 110 }, { yPercent: 0, duration: 0.1, stagger: 0.025, ease: 'power3.out', overwrite: true }, 0.76)
         .to('.v3-tunnel-cta', { autoAlpha: 1, y: 0, duration: 0.08, ease: 'power2.out' }, 0.88);
+
+      // Arrival: the tin surfaces out of the dark as the scene scrolls in, instead of
+      // already standing there; the teams fade in behind it a beat later.
+      gsap.fromTo(
+        tin,
+        { opacity: 0, y: () => stage.clientHeight * 0.18, scale: 0.6, filter: 'blur(10px) brightness(0.4)' },
+        { opacity: 1, y: 0, scale: 0.92, filter: 'blur(0px) brightness(1)', ease: 'power2.out', scrollTrigger: { trigger: stage, start: 'top 95%', end: 'top top', scrub: 1.2, invalidateOnRefresh: true } },
+      );
+      gsap.fromTo('.v3-tunnel-space', { opacity: 0 }, { opacity: 1, ease: 'none', scrollTrigger: { trigger: stage, start: 'top 60%', end: 'top top', scrub: 1.2 } });
     },
     [],
   );

@@ -83,3 +83,8 @@
   .v3-closing .v3-closing-foot { gap: 12px 24px; font-size: 0.9rem; }
   .v3-closing-end { height: 17vw; }
 }
+
+/* Dex 18 Nov: show the whole ALLPAID, not cropped. Full word, sized to the width, sitting on the page bottom. */
+.v3-closing .v3-closing-end { height: auto; overflow: hidden; padding: clamp(8px, 2vw, 32px) 0 clamp(16px, 3vw, 40px); }
+.v3-closing .v3-closing-word { position: relative; left: auto; bottom: auto; transform: none; justify-content: center; font-size: 21vw; line-height: 0.86; letter-spacing: -0.04em; }
+.v3-closing .v3-closing-word span { background: linear-gradient(180deg, rgba(242, 243, 243, 0.2) 0%, rgba(242, 243, 243, 0.05) 85%); -webkit-background-clip: text; background-clip: text; }

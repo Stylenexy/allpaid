@@ -22,24 +22,24 @@ export function Banner() {
     <div className="banner" role="region" aria-label="BCH BLAZE 2026 project links">
       <div className="banner-in">
         <span className="banner-tag">BCH BLAZE 2026</span>
-        {SITE.slidesUrl ? (
-          <>
+        <span className="banner-links">
+          {SITE.slidesUrl ? (
             <a href={SITE.slidesUrl} target="_blank" rel="noreferrer">
-              Slides
+              Slides<span aria-hidden="true" className="banner-arrow">↗</span>
             </a>
-            <span aria-hidden="true">·</span>
-          </>
-        ) : null}
-        <a href={SITE.repoUrl} target="_blank" rel="noreferrer">
-          Source code
-        </a>
-        {SITE.emberAddress ? (
-          <button type="button" className="banner-copy" onClick={copy} title={SITE.emberAddress}>
-            EMBER2026 votes: <span className="mono banner-address-long">{shortAddress(SITE.emberAddress)}</span>
-            <span className="mono banner-address-short">{shortHash(SITE.emberAddress.split(':').pop() || SITE.emberAddress)}</span>
-            <span aria-live="polite">{copied ? ' copied' : ''}</span>
-          </button>
-        ) : null}
+          ) : null}
+          <a href={SITE.repoUrl} target="_blank" rel="noreferrer">
+            Source code<span aria-hidden="true" className="banner-arrow">↗</span>
+          </a>
+          {SITE.emberAddress ? (
+            <button type="button" className="banner-copy" onClick={copy} title={`Copy ${SITE.emberAddress}`}>
+              <span className="banner-copy-label">EMBER2026 votes</span>
+              <span className="mono banner-address-long">{shortAddress(SITE.emberAddress)}</span>
+              <span className="mono banner-address-short">{shortHash(SITE.emberAddress.split(':').pop() || SITE.emberAddress)}</span>
+              <span className="banner-copied" aria-live="polite">{copied ? 'Copied' : 'Copy'}</span>
+            </button>
+          ) : null}
+        </span>
       </div>
     </div>
   );
@@ -47,7 +47,7 @@ export function Banner() {
 
 export function Nav({ current, variant }: { current?: 'home' | 'new' | 'try' | 'jar'; variant?: 'v3' }) {
   return (
-    <header className={variant === 'v3' ? 'nav nav--v3' : 'nav'}>
+    <header className={variant === 'v3' ? 'nav nav--v3' : 'nav nav--v3 nav--solid'}>
       <div className="nav-in wrap">
         <a href="/" onClick={onLinkClick} className="nav-home" aria-label="Allpaid home">
           <Logo />

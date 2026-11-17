@@ -59,7 +59,8 @@ export function Closing() {
           <div className="v3-closing-frame">
             {/* Same wall as kit's Wall, but chosen by width (srcset) so phones,
                 which crop this wide night into a tall frame, get the sharp file. */}
-            <div className="v3-wall v3-shade-bottom">
+            <picture className="v3-wall v3-shade-bottom">
+              <source type="image/avif" srcSet="/v3/wall-jogja-md.avif 1280w, /v3/wall-jogja-xl.avif 2560w" sizes="(max-width: 760px) 260vw, 100vw" />
               <img
                 src="/v3/wall-jogja.webp"
                 srcSet="/v3/wall-jogja-sm.webp 900w, /v3/wall-jogja.webp 1913w"
@@ -69,7 +70,7 @@ export function Closing() {
                 decoding="async"
                 style={{ objectPosition: '76% 50%' }}
               />
-            </div>
+            </picture>
             <div className="v3-inner v3-closing-inner">
               <Caps align="left" className="v3-closing-title">
                 A fairer way<br />to split the night.

@@ -35,3 +35,12 @@
   .v3-story-stage { height: auto; aspect-ratio: 1 / 1.08; margin-top: -24px; }
   .v3-story-zoom img { object-position: 44% 55%; }
 }
+
+/* Editorial copy: headline left, two short paragraphs right, the key sentence in white. */
+.v3-story .v3-story-copy { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(32px, 5vw, 96px); align-items: end; }
+.v3-story .v3-story-text { display: grid; gap: 1.4rem; max-width: 30rem; padding-bottom: 0.4rem; }
+.v3-story .v3-story-p { margin: 0; font-size: clamp(1.02rem, 1.2vw, 1.22rem); line-height: 1.62; color: rgba(242, 243, 243, 0.58); max-width: none; }
+.v3-story .v3-story-p strong { color: #f2f3f3; font-weight: 600; }
+@media (max-width: 860px) {
+  .v3-story .v3-story-copy { grid-template-columns: 1fr; align-items: start; }
+}

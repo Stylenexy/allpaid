@@ -95,3 +95,6 @@
   .v3-cheat-chips { position: static; display: grid; justify-items: start; gap: 10px; padding: 18px var(--v3-pad) 0; }
   .v3-cheat .v3-cheat-chip { position: static; white-space: normal; font-size: 0.88rem; }
 }
+
+/* Keep the headline clear of the floating nav at any window size (Dex 18 Nov). */
+.v3-cheat .v3-cheat-copy { top: max(136px, calc(var(--fy) + var(--u) * 112)); }
