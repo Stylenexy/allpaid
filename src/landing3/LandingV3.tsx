@@ -40,7 +40,7 @@ export function LandingV3() {
       navTriggers.forEach((s) => s.kill());
       nav?.classList.remove('is-scrolled', 'on-light');
       stop();
-      ScrollTrigger.getAll().forEach((s) => s.kill());
+      // Each scene reverts its own triggers (gsap.context); never kill the next page's.
     };
   }, []);
   return (

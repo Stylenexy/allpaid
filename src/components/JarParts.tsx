@@ -126,8 +126,8 @@ export function CheatPanel({ config, snap, engine }: { config: JarConfig; snap: 
     if (sandbox) engine.simulatePayment(100_000n);
   };
   return (
-    <section className="cheat" id="cheat" aria-labelledby="cheat-title">
-      <h2 id="cheat-title" className="cheat-title">
+    <section className="cheat v3a-panel v3a-cheat" id="cheat" aria-labelledby="cheat-title" data-rise>
+      <h2 id="cheat-title" className="cheat-title v3a-h2">
         Try to cheat
       </h2>
       <p className="cheat-text">
@@ -141,12 +141,12 @@ export function CheatPanel({ config, snap, engine }: { config: JarConfig; snap: 
             <span className="cheat-armed" role="status">
               Thief is waiting. {sandbox ? '' : 'Pay any amount into the jar.'}
             </span>
-            <button type="button" className="btn btn-quiet btn-small" onClick={() => engine.disarmCheat()}>
+            <button type="button" className="v3a-textbtn" onClick={() => engine.disarmCheat()}>
               Call it off
             </button>
           </>
         ) : (
-          <button type="button" className="btn" onClick={run} disabled={snap.status !== 'watching'}>
+          <button type="button" className="v3-pill v3-pill--light" onClick={run} disabled={snap.status !== 'watching'}>
             {sandbox ? 'Pay 0.001 BCH and let the thief try first' : 'Let the thief try the next payment'}
           </button>
         )}
