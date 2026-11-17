@@ -57,6 +57,7 @@ export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: Ja
         <label className="chip chip-input">
           <span className="visually-hidden">Other amount in BCH</span>
           <input
+            aria-label="Other amount in BCH"
             inputMode="decimal"
             placeholder="other"
             value={custom}
@@ -65,7 +66,6 @@ export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: Ja
           />
         </label>
       </div>
-      {tooSmall && <p className="problem">The smallest payment this jar can split is {bch(engine.min, 2)} BCH.</p>}
 
       {sandbox ? (
         <div className="pay-sandbox">
@@ -100,6 +100,7 @@ export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: Ja
           <p className="hint">Any Bitcoin Cash wallet can scan the QR. The split happens within seconds of the payment landing.</p>
         </>
       )}
+      {tooSmall && <p className="problem pay-problem" role="alert">The smallest payment this jar can split is {bch(engine.min, 2)} BCH.</p>}
     </section>
   );
 }

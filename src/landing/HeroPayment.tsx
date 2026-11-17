@@ -14,7 +14,7 @@ export function HeroPayment() {
   return (
     <div className="hero-payment demo-unconfigured">
       <div className="hero-qr"><QR value={`${location.origin}/try`} label="Open the Allpaid play-money demo" size={112} /></div>
-      <div><strong>Scan to try the jar.</strong><p>Play money only. The live demo jar is not configured yet.</p><a href="/try" onClick={onLinkClick}>Open the working demo ↗</a></div>
+      <div><strong>Scan to try the jar.</strong><p>Play money, right in your browser.</p><a href="/try" onClick={onLinkClick}>Open the working demo ↗</a></div>
     </div>
   );
 }

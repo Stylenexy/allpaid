@@ -9,6 +9,7 @@ import { bch, percent, sats } from '../lib/format';
 import { onLinkClick } from '../router';
 import { SAMPLE_BAND } from '../lib/sample';
 import { SITE } from '../site';
+import { Logo } from '../components/TinMark';
 
 const NET_LABEL = {
   mainnet: 'Mainnet · real BCH',
@@ -69,11 +70,12 @@ function JarView({ config }: { config: JarConfig }) {
             {config.members.length} members ·{' '}
             {config.members.map((m) => `${m.name}${m.jar ? ' (jar)' : ''} ${percent(m.bps)}`).join(', ')}
           </p>
-        </div>
-        <div className="jar-head-actions">
           <span className={`status status-${snap.status}`} role="status">
+            <span className="status-mark" aria-hidden="true"><Logo size={20} /></span>
             {snap.status === 'watching' ? 'Watching the jar' : snap.status === 'connecting' ? 'Connecting…' : 'Offline, retrying'}
           </span>
+        </div>
+        <div className="jar-head-actions">
           {config.net !== 'sandbox' && (
             <button type="button" className="btn btn-small" onClick={share}>
               {shared ? 'Link copied' : 'Share this jar'}

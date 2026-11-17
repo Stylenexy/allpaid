@@ -3,6 +3,7 @@ import { JarEngine } from '../src/lib/engine';
 import { jarAddress } from '../src/lib/chain';
 import { SAMPLE_BAND } from '../src/lib/sample';
 import { SPLIT_FEE } from '../src/lib/jar';
+import { cheatResult } from '../src/landing/cheat-result';
 
 const until = async (check: () => boolean, ms = 3000) => {
   const start = Date.now();
@@ -43,5 +44,6 @@ describe('the watcher', () => {
     const cheat = engine.getSnapshot().events.find((e) => e.kind === 'cheat');
     expect(cheat?.rule).toBe('one output per member, no extra outputs');
     expect(cheat?.message).toMatch(/OP_VERIFY/);
+    expect(cheatResult(engine.getSnapshot().events)).toEqual({ refusal: cheat, honest: true });
   });
 });

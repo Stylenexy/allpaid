@@ -26,9 +26,8 @@ export function Banner() {
           <a href={SITE.slidesUrl} target="_blank" rel="noreferrer">
             Slides
           </a>
-        ) : (
-          <span className="banner-todo">Slides: link coming</span>
-        )}
+        ) : null}
+        <span aria-hidden="true">·</span>
         <a href={SITE.repoUrl} target="_blank" rel="noreferrer">
           Source code
         </a>
@@ -37,9 +36,7 @@ export function Banner() {
             EMBER2026 votes: <span className="mono">{shortAddress(SITE.emberAddress)}</span>
             <span aria-live="polite">{copied ? ' copied' : ''}</span>
           </button>
-        ) : (
-          <span className="banner-todo">EMBER2026 address: coming</span>
-        )}
+        ) : null}
       </div>
     </div>
   );

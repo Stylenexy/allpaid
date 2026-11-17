@@ -12,10 +12,10 @@ export function CheatScene() {
         <div>
           <h2 className="sec-title">Try to cheat.<br /><span className="chrome-type">The lid stays shut.</span></h2>
           <p className="sec-text">
-            Say {first} wants the whole tip. She builds a transaction that spends the jar's coin and pays only herself. It has the right input
+            Imagine one member wants the whole tip. The thief builds a transaction that spends the jar's coin and sends all of it to {first}. It has the right input
             and a fair-looking fee. It goes straight to the Bitcoin Cash VM, with no check on our side first.
           </p>
-          <p className="sec-text">Below it: the VM's own refusal, and the line of the contract that caught her.</p>
+          <p className="sec-text">Below it: the VM's own refusal, and the line of the contract that caught the thief.</p>
         </div>
         <Suspense fallback={<div className="demo-card is-loading">Loading the play-money network…</div>}>
           <CheatDemo />

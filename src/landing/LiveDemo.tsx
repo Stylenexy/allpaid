@@ -10,6 +10,8 @@ import { SPLIT_FEE } from '../lib/jar';
 import { onLinkClick } from '../router';
 import type { JarEngine } from '../lib/engine';
 import { PaymentRoutes } from './PaymentRoutes';
+import { cheatResult } from './cheat-result';
+import { TinMark } from '../components/TinMark';
 
 const DROP = 100_000n;
 
@@ -24,6 +26,7 @@ export default function HeroDemo() {
   useEffect(() => {
     sharedEngine = engine;
     waiters.forEach((w) => w());
+    return () => { if (sharedEngine === engine) sharedEngine = null; };
   }, [engine]);
 
   useEffect(() => {
@@ -53,7 +56,7 @@ export default function HeroDemo() {
         </a>
       </div>
       <p className="demo-note">
-        Play money in a network that lives in this tab. Each split is built by the real contract and accepted by the Bitcoin Cash VM.
+        Play money. Every split runs the real contract in this tab's Bitcoin Cash VM.
       </p>
     </div>
   );
@@ -79,10 +82,18 @@ export function CheatDemo() {
 
 function CheatInner({ engine }: { engine: JarEngine }) {
   const snap = useSyncExternalStore(engine.subscribe, engine.getSnapshot);
-  const lastCheat = snap.events.find((e) => e.kind === 'cheat');
+  const { refusal: lastCheat, honest } = cheatResult(snap.events);
   const [first, ...others] = SAMPLE_BAND.members;
   return (
     <div className="demo-card">
+      <svg key={lastCheat?.id ?? 'ready'} className={`cheat-world ${lastCheat ? 'is-refused' : ''} ${honest ? 'is-honest' : ''}`} viewBox="0 0 360 170" role="img" aria-label={lastCheat ? `The slot is locked. The thief's route is broken.${honest ? ' The honest split was accepted by the VM.' : ' Waiting for the honest split.'}` : 'The jar holds the agreed routes. Try sending a transaction that breaks the agreement.'}>
+        <path className="cheat-thief-route" pathLength="1" d="M180 74v30q0 12 70 12h72" />
+        <path className="cheat-honest-route" pathLength="1" d="M180 74v40q0 16-95 16H34m146-56v82m0-82v40q0 16 85 16h61" />
+        <g className="cheat-vessel" transform="translate(142 0)"><TinMark size={76} /></g>
+        <path className="cheat-slot" d="M170 18h20" />
+        <path className="cheat-lock" d="M171 55v-8a9 9 0 0 1 18 0v8m-20 0h22v18h-22Z" />
+        <text className="cheat-route-label" x="320" y="102" textAnchor="end">Thief</text>
+      </svg>
       <div className="thief-tx" aria-label="The thief's transaction">
         <p className="thief-row">
           <span>In</span>
@@ -113,7 +124,7 @@ function CheatInner({ engine }: { engine: JarEngine }) {
         Send the thief's transaction
       </button>
       {lastCheat ? (
-        <Refusal event={lastCheat} sandbox key={lastCheat.id} after="Then the honest split went through: the tree above paid all seven wallets." />
+        <Refusal event={lastCheat} sandbox key={lastCheat.id} after={honest ? 'Then the honest split went through: the tree above paid all seven wallets.' : 'The thief was refused. Waiting for the honest split.'} />
       ) : (
         <p className="demo-note">Nothing is checked on our side first. The transaction goes straight to the VM, the same rules a node runs.</p>
       )}

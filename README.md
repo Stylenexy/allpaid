@@ -8,7 +8,7 @@
 
 One QR. All paid.
 
-[![ci](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml/badge.svg)](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml) ![tests](https://img.shields.io/badge/tests-41%20passing-2ea44f) ![license](https://img.shields.io/badge/license-MIT-blue) ![owner keys](https://img.shields.io/badge/owner%20keys-0-2ea44f) [![Pay this team on BCH](public/badge.svg)](#embed-and-badge)
+[![ci](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml/badge.svg)](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml) ![tests](https://img.shields.io/badge/tests-51%20passing-2ea44f) ![license](https://img.shields.io/badge/license-MIT-blue) ![owner keys](https://img.shields.io/badge/owner%20keys-0-2ea44f) [![Pay this team on BCH](public/badge.svg)](#embed-and-badge)
 
 **Live app: _TODO final URL_** · **[Play-money jar, no wallet needed](#try-it-in-60-seconds)** · **Slides (Widget Factory): _TODO_** · **Video: _TODO_**
 
@@ -41,8 +41,8 @@ Built for **BCH BLAZE 2026, Mainnet Track**, November 2026. The contract has not
 | Criterion | What Allpaid does |
 |---|---|
 | **Innovation** | An address that is a whole team. Nested jars make a revenue waterfall out of plain payments: a festival pays a band, the band pays its crew, all from one scan. The page invites you to attack it and shows the network refusing. |
-| **Design and usability** | The payer only scans and pays. The team sets up in one form, no account; nesting is pasting another jar's link as a member. The split tree lights up level by level with the amount and a link per transaction. Tested at 360 px. (The visual design is a neutral placeholder while the final direction is chosen.) |
-| **Technical strength** | Covenant with native introspection: output count, recipients, exact amounts and token fields are all fixed by the contract; no owner key, no signature. Nested jars need no contract change: a jar's address is a P2SH32 locking bytecode like any other recipient. Splits are deterministic, so any device (or the keeper) can send them and all send the same transaction. 41 tests, all transactions checked by the BCH VM. |
+| **Design and usability** | The payer only scans and pays. The team sets up in one form, no account; nesting is pasting another jar's link as a member. The split tree lights up level by level with the amount and a link per transaction. Tested at 360 px. (Covenant Noir uses a continuous metal-vessel scroll sequence with a reduced-motion alternative.) |
+| **Technical strength** | Covenant with native introspection: output count, recipients, exact amounts and token fields are all fixed by the contract; no owner key, no signature. Nested jars need no contract change: a jar's address is a P2SH32 locking bytecode like any other recipient. Splits are deterministic, so any device (or the keeper) can send them and all send the same transaction. 51 tests, all transactions checked by the BCH VM. |
 | **Business potential** | See [Business model](#business-model-and-roadmap): an optional organiser share in event jars, printed QR kits, and a one-line embed for podcasts, restaurants and team fundraisers. |
 
 ## How it works
@@ -50,14 +50,14 @@ Built for **BCH BLAZE 2026, Mainnet Track**, November 2026. The contract has not
 ```mermaid
 flowchart LR
   P[Payer's wallet] -- 1. pays the QR --> J[(Band jar<br/>Allpaid covenant)]
-  J -- 2. split --> A[Ayu 30%]
-  J --> B[Bima 25%]
-  J --> C[Cahyo 20%]
+  J -- 2. split --> A[Vocals 30%]
+  J --> B[Drums 25%]
+  J --> C[Sound 20%]
   J --> R[(Road crew jar<br/>25%)]
-  R -- 3. split again --> D[Dewi 40%]
-  R --> E[Eko 25%]
-  R --> F[Fajar 20%]
-  R --> G[Gita 15%]
+  R -- 3. split again --> D[Manager 40%]
+  R --> E[Stage 25%]
+  R --> F[Driver 20%]
+  R --> G[Photos 15%]
 ```
 
 1. **The team writes down who gets what.** Names, payout addresses and shares (2 to 4 members, adding up to 100%). A member can be another jar: paste that jar's link instead of an address. The list is encoded in the page link after the `#`, so it never reaches a server. The browser instantiates the precompiled contract with these values and gets a P2SH32 address.
@@ -83,7 +83,7 @@ Measured split sizes: 441 bytes for 2 members, 502 for 3, 561 for 4, so the fixe
 
 ```bash
 npm ci
-npm test        # compiles the contract, then 41 tests
+npm test        # compiles the contract, then 51 tests
 npm run build   # type-check and production build
 ```
 
@@ -156,7 +156,7 @@ npm run dev       # http://localhost:5173
 - **Where the idea comes from.** The Indonesian tip tin is a *kencleng*, a tip can with a slot in the lid. Street bands pass one around after a set, and one person ends up holding it and paying the others. Allpaid's first working name was Kencleng.
 - **Prior concept by the same author:** BonBagi (ZECATHON 2026, Zcash shielded payments, October 2026) split one payment across members with a signed agreement and a multi-recipient Zcash request. Allpaid shares no code, text or assets with it: the contract, the app and the design were written from scratch for Bitcoin Cash during BCH BLAZE 2026.
 - Covenants that divide coins between fixed recipients have been discussed in the Bitcoin Cash community before. Allpaid does not claim to be the first; it packages the idea for teams paid by QR, and adds nesting.
-- Built with [CashScript](https://cashscript.org) 0.14.0 (MIT), [libauth](https://libauth.org) (MIT), [WizardConnect](https://gitlab.com/riftenlabs/lib/wizardconnect) by Riften Labs (LGPL-3.0-or-later, used unmodified as npm packages), [qrcode](https://github.com/soldair/node-qrcode) (MIT), React and Vite. Fonts: Bricolage Grotesque, Instrument Sans, IBM Plex Mono (SIL Open Font License) via Fontsource.
+- Built with [CashScript](https://cashscript.org) 0.14.0 (MIT), [libauth](https://libauth.org) (MIT), [WizardConnect](https://gitlab.com/riftenlabs/lib/wizardconnect) by Riften Labs (LGPL-3.0-or-later, used unmodified as npm packages), [qrcode](https://github.com/soldair/node-qrcode) (MIT), React and Vite. Fonts: Archivo (headlines), Nunito Sans (body), IBM Plex Mono (addresses and hashes) (SIL Open Font License) via Fontsource.
 - Logo and share image: drawn for this project.
 
 License: [MIT](LICENSE).

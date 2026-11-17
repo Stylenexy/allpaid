@@ -3,17 +3,26 @@
 import { Hero } from './sections/Hero';
 import { Story } from './sections/Story';
 import { HowItWorks } from './sections/HowItWorks';
-import { SplitTrees } from './sections/SplitTrees';
+import { useEffect, useRef } from 'react';
 import { CheatScene } from './sections/CheatScene';
 import { WhyBch } from './sections/WhyBch';
 import { UseCases } from './sections/UseCases';
 import { Cta } from './sections/Cta';
 
-const SECTIONS = [Hero, SplitTrees, Story, HowItWorks, CheatScene, WhyBch, UseCases, Cta];
+const SECTIONS = [Hero, Story, HowItWorks, CheatScene, WhyBch, UseCases, Cta];
 
 export function Landing() {
+  const stage = useRef<HTMLElement>(null);
+  useEffect(() => {
+    let dispose: (() => void) | undefined;
+    let alive = true;
+    import('./motion').then(({ mountMotion }) => {
+      if (alive && stage.current) dispose = mountMotion(stage.current);
+    });
+    return () => { alive = false; dispose?.(); };
+  }, []);
   return (
-    <main className="landing">
+    <main className="landing" ref={stage}>
       {SECTIONS.map((Section, i) => (
         <Section key={i} />
       ))}
