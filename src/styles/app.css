@@ -379,6 +379,11 @@
   gap: var(--s-3);
 }
 
+.pay-next {
+  width: 100%;
+  border-color: var(--refused);
+}
+
 .wiz {
   display: grid;
   gap: var(--s-2);
@@ -668,6 +673,8 @@
   margin-top: var(--s-7);
   display: grid;
   gap: var(--s-3);
+  /* Clear the sticky navigation when "Now try to cheat it" scrolls here. */
+  scroll-margin-top: 88px;
 }
 
 .cheat-title {

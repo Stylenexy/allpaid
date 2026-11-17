@@ -89,7 +89,7 @@ export function CheatPanel({ config, snap, engine }: { config: JarConfig; snap: 
     if (sandbox) engine.simulatePayment(100_000n);
   };
   return (
-    <section className="cheat" aria-labelledby="cheat-title">
+    <section className="cheat" id="cheat" aria-labelledby="cheat-title">
       <h2 id="cheat-title" className="cheat-title">
         Try to cheat
       </h2>

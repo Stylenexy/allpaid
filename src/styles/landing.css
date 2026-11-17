@@ -137,6 +137,8 @@
   .hero-art { height:240px; overflow:clip; position:relative; margin-top:-12px; }
   .hero-art svg { width:660px; max-width:none; height:252px; position:relative; left:50%; transform:translateX(-50%); }
   .hero-art text { font-size:22px; }
+  /* The cropped vessel puts "Fixed shares out" on top of the lead text: the split map below says it anyway. */
+  .hero-art text:last-child { display:none; }
   .hero-payment { gap:var(--s-3); }
   .hero-payment strong { font-size:var(--step--1); }
   .hero-finale .scene-head { grid-template-columns:minmax(0,1fr); gap:var(--s-3); }

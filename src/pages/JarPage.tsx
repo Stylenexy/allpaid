@@ -64,7 +64,7 @@ function JarView({ config }: { config: JarConfig }) {
     <main className={`jar wrap ${config.net === 'sandbox' ? 'jar-sandbox' : 'jar-live'}`}>
       <div className="jar-head">
         <div>
-          <h1 className="jar-name">{config.net === 'sandbox' ? <>Put the rule<br /><span className="chrome-type">to the test.</span></> : config.name}</h1>
+          <h1 className="jar-name">{config.net === 'sandbox' ? <>Pay once.<br /><span className="chrome-type">Seven wallets <span className="keep-words">get paid.</span></span></> : config.name}</h1>
           <p className={`net net-${config.net}`}>{NET_LABEL[config.net]}{config.net === 'sandbox' ? ` · ${config.name}` : ''}</p>
           <p className="jar-sub">
             {config.members.length} members ·{' '}

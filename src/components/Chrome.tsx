@@ -23,11 +23,13 @@ export function Banner() {
       <div className="banner-in">
         <span className="banner-tag">BCH BLAZE 2026</span>
         {SITE.slidesUrl ? (
-          <a href={SITE.slidesUrl} target="_blank" rel="noreferrer">
-            Slides
-          </a>
+          <>
+            <a href={SITE.slidesUrl} target="_blank" rel="noreferrer">
+              Slides
+            </a>
+            <span aria-hidden="true">·</span>
+          </>
         ) : null}
-        <span aria-hidden="true">·</span>
         <a href={SITE.repoUrl} target="_blank" rel="noreferrer">
           Source code
         </a>

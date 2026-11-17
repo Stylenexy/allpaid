@@ -11,6 +11,15 @@ import { QR } from './QR';
 
 const CHIPS = [50_000n, 100_000n, 500_000n, 1_000_000n];
 
+/** Bring the cheat demo into view and put the keyboard on its button. */
+function goToCheat() {
+  const target = document.getElementById('cheat');
+  if (!target) return;
+  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  target.querySelector<HTMLButtonElement>('.cheat-row button')?.focus({ preventScroll: true });
+}
+
 export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: JarSnapshot; engine: JarEngine }) {
   const options = CHIPS.filter((c) => c >= engine.min).slice(0, 3);
   const [amount, setAmount] = useState<bigint>(options[1] ?? options[0] ?? engine.min);
@@ -99,6 +108,11 @@ export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: Ja
           </div>
           <p className="hint">Any Bitcoin Cash wallet can scan the QR. The split happens within seconds of the payment landing.</p>
         </>
+      )}
+      {snap.lastSplit && (
+        <button type="button" className="btn pay-next" onClick={goToCheat}>
+          Now try to cheat it <span aria-hidden="true">↓</span>
+        </button>
       )}
       {tooSmall && <p className="problem pay-problem" role="alert">The smallest payment this jar can split is {bch(engine.min, 2)} BCH.</p>}
     </section>
@@ -220,7 +234,10 @@ function WizardPay({ config, jarAddress, amount, disabled }: { config: JarConfig
         </p>
       )}
       {'scan' in pay && pay.scan && pay.scan.balance === 0n && pay.step === 'ready' && (
-        <p className="hint">This wallet has no spendable BCH on {config.net === 'mainnet' ? 'mainnet' : 'chipnet'} in its first addresses.</p>
+        <p className="hint">
+          No spendable BCH on {config.net === 'mainnet' ? 'mainnet' : 'chipnet'} in the addresses this wallet has used. If it holds some
+          anyway, scan the QR with this wallet.
+        </p>
       )}
       {wc.error && <p className="problem">{wc.error}</p>}
       {wc.uri && wc.qrUri && (

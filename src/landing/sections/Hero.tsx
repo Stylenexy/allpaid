@@ -14,8 +14,8 @@ export function Hero() {
             <div className="hero-copy">
               <p className="hero-lead">One Bitcoin Cash address that pays your whole team, in shares a covenant locks. No treasurer. No custody.</p>
               <div className="ctas">
-                <a className="btn btn-money" href="/new" onClick={onLinkClick}>Make your team's jar <span aria-hidden="true">↗</span></a>
-                <a className="btn btn-quiet" href="#split">Follow the money <span aria-hidden="true">↓</span></a>
+                <a className="btn btn-money" href="/try" onClick={onLinkClick}>Try it with play money, no wallet <span aria-hidden="true">↗</span></a>
+                <a className="btn" href="/new" onClick={onLinkClick}>Make your team's jar</a>
               </div>
             </div>
             <Suspense fallback={<p className="hero-payment">Preparing the demo jar…</p>}><HeroPayment /></Suspense>
