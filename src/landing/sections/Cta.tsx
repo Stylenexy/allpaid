@@ -15,6 +15,14 @@ export function Cta() {
             {SITE.demoJarPath ? 'Pay into our demo jar on mainnet' : 'Open the play-money jar'}
           </a>
         </div>
+        <ul className="cta-plan" aria-label="How Allpaid is paid for">
+          <li>Free for teams</li>
+          <li>Event templates can include Allpaid as a visible, opt-in 0.5% member written into the address</li>
+          <li>Hosted keeper with payout alerts for venues</li>
+        </ul>
+        <p className="cta-why">
+          <strong>Why not a multi-output payment?</strong> Any wallet or exchange can pay one address, and the cut is checkable in the address itself.
+        </p>
       </div>
     </section>
   );

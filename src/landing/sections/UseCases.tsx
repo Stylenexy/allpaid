@@ -15,10 +15,10 @@ const CASES = [
     text: 'A tip QR on the bill for the whole floor: kitchen, servers, dishwashers. The contract splits the pool, not the manager at closing time.',
   },
   {
-    title: 'Team-run FundMe campaigns',
-    inlet: 'FundMe campaign',
+    title: 'Team-run campaigns',
+    inlet: 'Team campaign',
     members: ['Outreach', 'Builders', 'Ops'],
-    text: 'A campaign run by a team (a FundMe page, a hackathon crew) collects to one address that pays every member their part.',
+    text: 'A campaign run by a team (a fundraiser, a hackathon crew) collects to one address that pays every member their part.',
   },
   {
     title: 'Street bands',
