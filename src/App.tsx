@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { useRoute, onLinkClick } from './router';
 import { Banner, Footer, Nav } from './components/Chrome';
-import { Landing } from './landing/Landing';
+const LandingV3 = lazy(() => import('./landing3/LandingV3').then((m) => ({ default: m.LandingV3 })));
 
 const Create = lazy(() => import('./pages/Create').then((m) => ({ default: m.Create })));
 const JarRoute = lazy(() => import('./pages/JarPage').then((m) => ({ default: m.JarRoute })));
@@ -23,9 +23,9 @@ export function App() {
   return (
     <>
       <Banner />
-      <Nav current={route.page === 'home' || route.page === 'missing' ? undefined : route.page} />
+      <Nav current={route.page === 'home' || route.page === 'missing' ? undefined : route.page} variant={route.page === 'home' ? 'v3' : undefined} />
       <Suspense fallback={<main className="wrap page-loading">Loading…</main>}>
-        {route.page === 'home' && <Landing />}
+        {route.page === 'home' && <LandingV3 />}
         {route.page === 'new' && <Create />}
         {route.page === 'jar' && <JarRoute key={route.code} code={route.code} />}
         {route.page === 'try' && <JarRoute sandbox />}
@@ -41,7 +41,7 @@ export function App() {
           </main>
         )}
       </Suspense>
-      <Footer />
+      {route.page !== 'home' && <Footer />}
     </>
   );
 }

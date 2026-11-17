@@ -1,0 +1,67 @@
+/* How: white set photograph, then a waterfall of real numbers. */
+.v3-how { background: var(--v3-paper); }
+
+/* The photo keeps its own proportions, so all four tins stay in frame. */
+.v3-how-wall { position: relative; width: 100%; aspect-ratio: 1915 / 821; overflow: hidden; background: #fefefe; }
+.v3-how-wall .v3-wall { will-change: transform; }
+
+.v3-how .v3-how-inner { padding-top: clamp(64px, 11vh, 128px); padding-bottom: clamp(56px, 8vh, 96px); }
+.v3-how-title { max-width: 14em; }
+
+.v3-how-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  column-gap: clamp(40px, 6vw, 120px);
+  align-items: start;
+  margin-top: clamp(48px, 9vh, 104px);
+}
+
+/* Three steps written as sentences; the number is part of the sentence. */
+.v3-how-steps {
+  position: sticky;
+  top: 24vh;
+  display: grid;
+  gap: clamp(26px, 4.4vh, 52px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.v3-how-step {
+  font-family: var(--v3-caps-font);
+  font-weight: 500;
+  font-size: clamp(1.7rem, 2.7vw, 2.9rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--v3-ink);
+  max-width: 13em;
+  hyphens: manual;
+  text-wrap: balance;
+}
+.v3-how-n { color: rgba(14, 16, 17, 0.45); font-variant-numeric: tabular-nums; margin-right: 0.12em; }
+
+.v3-how-figure { margin: 0; max-width: 640px; justify-self: end; width: 100%; }
+.v3-how-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.v3-how-svg--narrow { display: none; }
+.v3-how-caption { margin: 22px 0 0; font-size: 0.95rem; line-height: 1.5; color: var(--v3-ink-soft); text-align: center; }
+
+/* Lines: green for money, ink for the contract, faint ink for fees. */
+.v3-how-draw { fill: none; stroke-dasharray: 1; stroke-dashoffset: 0; stroke-linecap: butt; }
+.v3-how-money { stroke: var(--v3-money); }
+.v3-how-ink { stroke: var(--v3-ink); stroke-width: 1.5; }
+.v3-how-fee { stroke: rgba(14, 16, 17, 0.45); stroke-width: 1; }
+
+.v3-how-svg text { fill: var(--v3-ink); }
+.v3-how-t-big { font-family: var(--v3-caps-font); font-weight: 600; letter-spacing: -0.01em; }
+.v3-how-t-amount { font-family: var(--v3-caps-font); font-weight: 600; font-variant-numeric: tabular-nums; }
+.v3-how-t-name { font-family: var(--v3-body-font); font-weight: 600; }
+.v3-how-svg .v3-how-t-soft { fill: rgba(14, 16, 17, 0.64); font-family: var(--v3-body-font); }
+
+@media (max-width: 900px) {
+  .v3-how-grid { grid-template-columns: minmax(0, 1fr); row-gap: 56px; }
+  .v3-how-steps { position: static; }
+  .v3-how-figure { justify-self: center; }
+}
+@media (max-width: 760px) {
+  .v3-how-svg--wide { display: none; }
+  .v3-how-svg--narrow { display: block; }
+}

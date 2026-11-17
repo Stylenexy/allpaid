@@ -1,0 +1,76 @@
+/* Stack: tin on a dark table by a window; big caps promises rise on the right and light up. */
+.v3-stack { min-height: 0; }
+.v3-stack-root { position: relative; }
+
+/* The room holds still behind the list. */
+.v3-stack-sticky { position: sticky; top: 0; z-index: 0; height: 100svh; overflow: hidden; }
+.v3-stack-zoom { position: absolute; inset: 0; transform-origin: 28% 60%; will-change: transform; }
+.v3-stack-sticky::before,
+.v3-stack-sticky::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.v3-stack-sticky::before {
+  background:
+    linear-gradient(180deg, var(--v3-night) 0%, rgba(10, 11, 12, 0) 26%),
+    linear-gradient(0deg, var(--v3-night) 0%, rgba(10, 11, 12, 0) 24%);
+}
+/* a little more dark on the right, where the words are */
+.v3-stack-sticky::after { background: linear-gradient(270deg, rgba(10, 11, 12, 0.5) 0%, rgba(10, 11, 12, 0) 55%); }
+
+.v3-stack-body {
+  position: relative;
+  z-index: 2;
+  max-width: 1440px;
+  margin: -100svh auto 0;
+  padding: 60svh var(--v3-pad) 44svh;
+}
+
+.v3-stack-list {
+  list-style: none;
+  margin: 0 0 0 auto;
+  padding: 0;
+  max-width: 64%;
+  font-family: var(--v3-caps-font);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.98;
+  font-size: clamp(2rem, 4vw, 5.4rem);
+  text-align: right;
+  color: var(--v3-white);
+}
+.v3-stack-line { display: block; width: fit-content; margin-left: auto; padding-bottom: 0.06em; text-wrap: balance; }
+.v3-stack-line + .v3-stack-line { margin-top: 0.1em; }
+
+/* Animated: window light sweeps across each line from the left. */
+.is-animated .v3-stack-line {
+  color: transparent;
+  background-image: linear-gradient(90deg, var(--v3-white) 0%, var(--v3-white) 40%, rgba(242, 243, 243, 0.14) 60%, rgba(242, 243, 243, 0.14) 100%);
+  background-size: 250% 100%;
+  background-position: 100% 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  will-change: transform, opacity;
+}
+
+/* Into a light scene: night eases into paper, no hard edge. */
+.v3-stack-dip {
+  display: none;
+  height: clamp(180px, 28vh, 320px);
+  background: linear-gradient(180deg,
+    #0a0b0c 0%, #141617 12%, #2c2f30 26%, #575a5b 42%, #8e9091 58%,
+    #c3c4c5 74%, #e9eaea 88%, #ffffff 100%);
+}
+.is-before-light + .v3-stack-dip { display: block; }
+
+@media (forced-colors: active) {
+  .is-animated .v3-stack-line { color: CanvasText; background: none; }
+}
+
+/* Phones: the room sits on top, the list follows on the dark below it. */
+@media (max-width: 760px) {
+  .v3-stack-sticky { position: relative; height: auto; aspect-ratio: 4 / 5; }
+  .v3-stack-zoom img { object-position: 16% 50% !important; }
+  .v3-stack-sticky::after { display: none; }
+  .v3-stack-body { margin-top: -2vw; padding: 0 var(--v3-pad) 104px; }
+  .v3-stack-list { max-width: none; font-size: clamp(1.9rem, 8.6vw, 2.6rem); }
+}

@@ -1,0 +1,83 @@
+/* Numbers: light scene, real sat amounts floating at depth around a centred headline. */
+.v3-numbers { --v3-numbers-dip: clamp(160px, 26vh, 300px); }
+
+.v3-numbers-root {
+  position: relative;
+  min-height: 150svh;
+  display: grid;
+  align-items: center;
+}
+.v3-numbers-root.is-after-dark { padding-top: var(--v3-numbers-dip); }
+
+/* Rising out of a dark scene: night eases into paper, no hard edge. */
+.v3-numbers-dip {
+  display: none;
+  position: absolute; left: 0; right: 0; top: 0; z-index: 1;
+  height: var(--v3-numbers-dip);
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    #0a0b0c 0%, #141617 12%, #2c2f30 26%, #575a5b 42%, #8e9091 58%,
+    #c3c4c5 74%, #e9eaea 88%, #ffffff 100%);
+}
+.is-after-dark .v3-numbers-dip { display: block; }
+
+/* The floating field */
+.v3-numbers-field { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: clip; }
+.is-after-dark .v3-numbers-field { top: var(--v3-numbers-dip); }
+
+.v3-numbers-amt {
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  font-family: var(--v3-caps-font);
+  font-weight: 500;
+  font-size: calc(var(--s) * 1rem);
+  line-height: 1;
+  letter-spacing: -0.025em;
+  color: var(--v3-ink);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  will-change: transform;
+}
+.v3-numbers-amt small {
+  font-family: var(--v3-body-font);
+  font-size: max(0.3em, 0.62rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-left: 0.35em;
+  opacity: 0.5;
+}
+
+.v3-numbers-coin {
+  position: absolute;
+  left: 80%;
+  top: 70%;
+  width: clamp(120px, 12vw, 210px);
+  will-change: transform;
+}
+.v3-numbers-coin img { display: block; width: 100%; height: auto; mix-blend-mode: multiply; }
+
+/* Copy */
+.v3-numbers-copy { z-index: 2; width: 100%; text-align: center; }
+.v3-numbers-facts {
+  list-style: none;
+  margin: clamp(1.8rem, 3.4vh, 2.8rem) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+  font-family: var(--v3-caps-font);
+  font-weight: 500;
+  font-size: clamp(1.05rem, 1.45vw, 1.4rem);
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  color: rgba(14, 16, 17, 0.74);
+}
+
+@media (max-width: 760px) {
+  .v3-numbers { --v3-numbers-dip: 140px; }
+  .v3-numbers-root { min-height: 125svh; }
+  .v3-numbers-copy .v3-caps { font-size: clamp(2rem, 9.4vw, 2.6rem); }
+  .v3-numbers-amt { left: calc(var(--mx) * 1%); top: calc(var(--my) * 1%); font-size: calc(var(--s) * 0.44rem + 0.2rem); }
+  .v3-numbers-amt.is-wide-only,
+  .v3-numbers-coin { display: none; }
+}

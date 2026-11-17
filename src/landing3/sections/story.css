@@ -1,0 +1,37 @@
+/* Story: dip from white through black into a Jogja night street. */
+.v3-story { --v3-story-dip: clamp(200px, 32vh, 360px); min-height: 0; }
+.v3-story-root { position: relative; }
+
+/* Night falls: paper eases through grey into black, no hard edge. */
+.v3-story-dip {
+  display: none;
+  height: var(--v3-story-dip);
+  background: linear-gradient(180deg,
+    #ffffff 0%, #e9eaea 12%, #c3c4c5 26%, #8e9091 42%, #575a5b 58%,
+    #2c2f30 74%, #141617 88%, #0a0b0c 100%);
+}
+.is-after-light .v3-story-dip { display: block; }
+
+.v3-story-copy { padding-top: clamp(48px, 8vh, 96px); padding-bottom: 0; }
+.v3-story-lede { max-width: 31em; }
+
+/* The street: full-bleed, kept at the photo's own wide shape on desktop. */
+.v3-story-stage {
+  position: relative;
+  z-index: 1;
+  margin-top: calc(-1 * clamp(40px, 7vw, 140px));
+  height: clamp(400px, 46vw, 94svh);
+  overflow: hidden;
+}
+.v3-story-zoom { position: absolute; inset: 0; will-change: transform; transform-origin: 50% 60%; }
+.v3-story-zoom img { object-position: 50% 62%; }
+.v3-story-stage::before,
+.v3-story-stage::after { content: ''; position: absolute; left: 0; right: 0; z-index: 1; pointer-events: none; }
+.v3-story-stage::before { top: 0; height: 38%; background: linear-gradient(180deg, var(--v3-night) 0%, rgba(10, 11, 12, 0.7) 40%, rgba(10, 11, 12, 0) 100%); }
+.v3-story-stage::after { bottom: 0; height: 26%; background: linear-gradient(0deg, var(--v3-night) 0%, rgba(10, 11, 12, 0) 100%); }
+
+@media (max-width: 760px) {
+  .v3-story { --v3-story-dip: 170px; }
+  .v3-story-stage { height: auto; aspect-ratio: 1 / 1.08; margin-top: -24px; }
+  .v3-story-zoom img { object-position: 44% 55%; }
+}

@@ -1,0 +1,51 @@
+/* Tunnel: photos of teams in CSS 3D depth around a turning tin. */
+.v3-tunnel { min-height: 0; }
+.v3-tunnel-stage { position: relative; height: 100svh; min-height: 600px; overflow: hidden; background: var(--v3-night); }
+/* A soft light behind the tin, and dark edges so cards dissolve as they pass. */
+.v3-tunnel-stage::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse 42% 46% at 50% 50%, rgba(160, 172, 178, 0.10) 0%, rgba(10, 11, 12, 0) 70%);
+}
+.v3-tunnel-stage::after {
+  content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: radial-gradient(ellipse 75% 75% at 50% 50%, rgba(10, 11, 12, 0) 55%, rgba(10, 11, 12, 0.85) 100%);
+}
+
+.v3-tunnel-space { position: absolute; inset: 0; z-index: 1; perspective: 900px; perspective-origin: 50% 50%; transform-style: preserve-3d; }
+.v3-tunnel-card {
+  --s: clamp(180px, 23vw, 380px);
+  position: absolute; left: 50%; top: 50%; width: var(--s); height: var(--s); margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
+  border-radius: 10px; overflow: hidden; opacity: 0; will-change: transform, opacity; backface-visibility: hidden;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+}
+.v3-tunnel-card.is-small { --s: clamp(110px, 12vw, 200px); }
+.v3-tunnel-photo, .v3-tunnel-photo img { display: block; width: 100%; height: 100%; }
+.v3-tunnel-photo img { object-fit: cover; }
+
+/* The tin: a turntable on canvas when the frames exist, else the plinth photo, masked round. */
+.v3-tunnel-tin {
+  --t: min(32vw, 48svh);
+  position: absolute; left: 50%; top: 50%; z-index: 2; width: var(--t); height: var(--t); margin: calc(var(--t) / -2) 0 0 calc(var(--t) / -2);
+  perspective: 1100px; will-change: transform;
+}
+.v3-tunnel-photo-tin {
+  position: absolute; inset: 0; transform-style: preserve-3d;
+  -webkit-mask-image: radial-gradient(closest-side, #000 58%, transparent 100%); mask-image: radial-gradient(closest-side, #000 58%, transparent 100%);
+}
+.v3-tunnel-photo-tin img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 58%; transform: scale(1.18); transform-origin: 50% 58%; display: block; }
+.v3-tunnel-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.v3-tunnel-tin.has-turn .v3-tunnel-photo-tin { display: none; }
+
+.v3-tunnel-copy {
+  position: absolute; left: 0; right: 0; bottom: clamp(40px, 9vh, 96px); z-index: 4;
+  padding: 0 var(--v3-pad); text-align: center;
+}
+.v3-tunnel-title.v3-caps { font-size: clamp(2.1rem, 5vw, 5.4rem); }
+.v3-tunnel-cta .v3-actions { margin-top: clamp(18px, 3vh, 28px); }
+
+@media (max-width: 760px) {
+  .v3-tunnel-card { --s: 50vw; }
+  .v3-tunnel-card.is-small { --s: 30vw; }
+  .v3-tunnel-tin { --t: min(64vw, 38svh); }
+  .v3-tunnel-copy { bottom: clamp(32px, 7vh, 64px); }
+}

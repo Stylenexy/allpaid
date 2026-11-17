@@ -1,0 +1,97 @@
+/*
+ * Cheat: dark interlude over the marble-hand wall. On wide screens everything
+ * is placed in the photo's own pixels (1672 × 941) so the lines stop exactly at
+ * the blade and the copy stays in the empty dark at any window shape:
+ *   --w/--h  the photo's cover size, --u one photo pixel, --fx/--fy its offset.
+ */
+.v3-cheat { min-height: 0; }
+.v3-cheat-root { position: relative; }
+
+.v3-cheat-stage {
+  --w: max(100vw, 177.68svh);
+  --h: max(56.28vw, 100svh);
+  --u: calc(var(--w) / 1672);
+  --fx: calc((100vw - var(--w)) / 2);
+  --fy: calc((100svh - var(--h)) * 0.3);
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--v3-night);
+}
+
+/* Photo */
+.v3-cheat-frame { position: absolute; left: var(--fx); top: var(--fy); width: var(--w); height: var(--h); z-index: 0; }
+.v3-cheat-zoom,
+.v3-cheat-geo { position: absolute; inset: 0; }
+.v3-cheat-zoom { transform-origin: 29.67% 30%; will-change: transform; }
+.v3-cheat-frame::before,
+.v3-cheat-frame::after { content: ''; position: absolute; left: 0; right: 0; z-index: 1; pointer-events: none; }
+.v3-cheat-frame::before { top: 0; height: 34%; background: linear-gradient(180deg, var(--v3-night) 0%, rgba(10, 11, 12, 0.62) 45%, rgba(10, 11, 12, 0) 100%); }
+.v3-cheat-frame::after { bottom: 0; height: 16%; background: linear-gradient(0deg, var(--v3-night) 0%, rgba(10, 11, 12, 0) 100%); }
+.v3-cheat-geo { z-index: 2; pointer-events: none; }
+
+/* The blade turning refusal red for a moment */
+.v3-cheat-flash {
+  position: absolute; top: 0; height: 80%;
+  width: 72px; margin-left: -36px;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 1.5px), #ff8a7f calc(50% - 1.5px), #ff8a7f calc(50% + 1.5px), transparent calc(50% + 1.5px)),
+    linear-gradient(90deg, rgba(255, 107, 94, 0) 0%, rgba(255, 107, 94, 0.14) 28%, rgba(255, 107, 94, 0.5) 50%, rgba(255, 107, 94, 0.14) 72%, rgba(255, 107, 94, 0) 100%);
+  /* red only along the tin, never behind the headline */
+  -webkit-mask-image: linear-gradient(180deg, transparent 24%, #000 46%, #000 94%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 24%, #000 46%, #000 94%, transparent 100%);
+  opacity: 0; visibility: hidden;
+}
+
+/* Attempt paths */
+.v3-cheat-paths { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.v3-cheat-line,
+.v3-cheat-glowline { fill: none; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
+.v3-cheat-line { stroke: rgba(242, 243, 243, 0.92); stroke-width: 1.5; }
+.v3-cheat-glowline { stroke: rgba(242, 243, 243, 0.1); stroke-width: 7; }
+.v3-cheat-node { fill: var(--v3-white); }
+.v3-cheat-hit { opacity: 0; visibility: hidden; }
+.v3-cheat-stop { stroke: var(--v3-refused); stroke-width: 3; stroke-linecap: round; opacity: 0; }
+
+/* Copy, in the empty dark */
+.v3-cheat-copy {
+  position: absolute; z-index: 3;
+  left: var(--v3-pad);
+  top: max(calc(var(--v3-pad) + 54px), calc(var(--fy) + var(--u) * 112));
+}
+.v3-cheat-copy .v3-caps { font-size: clamp(2.1rem, calc(var(--u) * 55), 5.2rem); }
+.v3-cheat-aside {
+  position: absolute; z-index: 3;
+  left: calc(var(--fx) + var(--u) * 760);
+  top: calc(var(--fy) + var(--u) * 722);
+  width: clamp(300px, calc(var(--u) * 440), 520px);
+}
+.v3-cheat-aside .v3-lede { margin-top: 0; font-size: clamp(0.95rem, calc(var(--u) * 17), 1.15rem); }
+.v3-cheat-aside .v3-actions { margin-top: 1.2rem; }
+
+/* Chips sit just above the start of each path, right-aligned to its wallet */
+.v3-cheat-chips { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.v3-cheat .v3-cheat-chip { position: absolute; right: calc(100% - var(--fx) - var(--u) * 1306); font-size: clamp(0.78rem, calc(var(--u) * 15), 1rem); }
+.v3-cheat-chip--0 { bottom: calc(100% - var(--fy) - var(--u) * 558); }
+.v3-cheat-chip--1 { bottom: calc(100% - var(--fy) - var(--u) * 648); }
+
+/* Phones: copy first, then the photo with its paths, then the two refusals. */
+@media (max-width: 760px) {
+  .v3-cheat-stage { height: auto; display: flex; flex-direction: column; padding: clamp(88px, 14vh, 120px) 0 72px; overflow: visible; }
+  .v3-cheat-copy,
+  .v3-cheat-aside { position: static; width: auto; padding: 0 var(--v3-pad); }
+  .v3-cheat-copy .v3-caps { font-size: clamp(2.2rem, 10.4vw, 3rem); }
+  .v3-cheat-aside { margin-top: 1.2rem; }
+  .v3-cheat-aside .v3-lede { font-size: 1rem; }
+  .v3-cheat-frame { position: relative; left: auto; top: auto; width: 100%; height: auto; aspect-ratio: 4 / 5; overflow: hidden; margin-top: 40px; }
+  /* cover the 4:5 box, blade at 47% across */
+  .v3-cheat-zoom,
+  .v3-cheat-geo { inset: auto; top: 0; left: -18.9%; height: 100%; width: auto; aspect-ratio: 1672 / 941; }
+  .v3-cheat-flash { width: 44px; margin-left: -22px; }
+  .v3-cheat-line { stroke-width: 2.8; }
+  .v3-cheat-glowline { stroke-width: 12; }
+  .v3-cheat-node { r: 7px; }
+  .v3-cheat-stop { stroke-width: 5; }
+  .v3-cheat-chips { position: static; display: grid; justify-items: start; gap: 10px; padding: 18px var(--v3-pad) 0; }
+  .v3-cheat .v3-cheat-chip { position: static; white-space: normal; font-size: 0.88rem; }
+}

@@ -1,0 +1,90 @@
+/* Constellation: thin light routes over a dark haze, glass chips where money lands. */
+.v3-constellation { min-height: 0; }
+.v3-constellation-stage {
+  position: relative; height: 100svh; min-height: 640px; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center;
+  padding: clamp(84px, 11vh, 120px) var(--v3-pad) clamp(18px, 3vh, 32px);
+}
+.v3-constellation-wall { z-index: 0; }
+.v3-constellation-wall img { object-position: left bottom; opacity: 0.9; }
+.v3-constellation-stage::after {
+  content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, var(--v3-night) 0%, rgba(10, 11, 12, 0) 22%, rgba(10, 11, 12, 0) 78%, var(--v3-night) 100%);
+}
+.v3-constellation-head, .v3-constellation-field, .v3-constellation-foot { position: relative; z-index: 2; width: 100%; }
+.v3-constellation-title.v3-caps { font-size: clamp(2.1rem, 4.6vw, 4.8rem); }
+
+/* The map keeps its drawing's proportions inside whatever height is left. */
+.v3-constellation-field { flex: 1 1 auto; min-height: 0; container-type: size; display: grid; place-items: center; margin: clamp(8px, 2vh, 24px) 0; }
+.v3-constellation-map { position: relative; width: min(100cqw, calc(100cqh * var(--v3-map-ratio)), 1180px); }
+.v3-constellation-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+.v3-constellation-line { fill: none; stroke: rgba(242, 243, 243, 0.12); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.v3-constellation-lit { fill: none; stroke: rgba(242, 243, 243, 0.62); stroke-width: 1.2; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+
+.v3-constellation-ring { fill: var(--v3-night); stroke: rgba(242, 243, 243, 0.8); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.v3-constellation-dot { fill: var(--v3-white); }
+.v3-constellation-tin path, .v3-constellation-tin ellipse { fill: none; stroke: var(--v3-white); stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+.v3-constellation-tin > path:first-of-type { fill: rgba(10, 11, 12, 0.85); }
+.v3-constellation-tin ellipse { fill: rgba(30, 33, 35, 0.95); }
+.v3-constellation-halo { fill: rgba(242, 243, 243, 0.05); stroke: none; }
+
+/* Moving money is the only green here. */
+.v3-constellation-coin, .v3-constellation-livecoin, .v3-constellation-drop {
+  fill: var(--v3-money); opacity: 0; filter: drop-shadow(0 0 6px rgba(10, 193, 142, 0.85));
+}
+
+/* Chips sit beside, below or above the point they belong to. */
+.v3-constellation-at { position: absolute; z-index: 3; line-height: 0; }
+.v3-constellation-at.is-right { transform: translate(0, -50%); }
+.v3-constellation-at.is-below { transform: translate(-50%, 0); }
+.v3-constellation-at.is-above { transform: translate(-50%, -100%); }
+.v3-constellation-at .v3-chip { font-size: clamp(0.74rem, 0.95vw, 0.92rem); line-height: 1.2; font-variant-numeric: tabular-nums; }
+.v3-constellation-at.is-hit .v3-chip { animation: v3-constellation-hit 0.9s cubic-bezier(.2, .8, .2, 1); }
+.v3-constellation-node.is-hit .v3-constellation-ring { animation: v3-constellation-ping 0.9s ease-out; }
+.v3-constellation-tin.is-hit .v3-constellation-halo { animation: v3-constellation-glow 1.1s ease-out; }
+@keyframes v3-constellation-hit {
+  0% { scale: 1.08; box-shadow: 0 0 0 1px rgba(10, 193, 142, 0.9), 0 0 24px rgba(10, 193, 142, 0.45); }
+  100% { scale: 1; box-shadow: 0 0 0 0 rgba(10, 193, 142, 0), 0 0 0 rgba(10, 193, 142, 0); }
+}
+@keyframes v3-constellation-ping {
+  0% { fill: rgba(10, 193, 142, 0.9); }
+  100% { fill: #0a0b0c; }
+}
+@keyframes v3-constellation-glow {
+  0% { fill: rgba(10, 193, 142, 0.32); }
+  100% { fill: rgba(242, 243, 243, 0.05); }
+}
+
+/* Once the real contract has paid in this tab, the map stays lit with its amounts. */
+.v3-constellation-wrap.is-live .v3-constellation-at .v3-chip { opacity: 1 !important; visibility: visible !important; transform: none !important; }
+.v3-constellation-wrap.is-live .v3-constellation-lit { stroke-dashoffset: 0 !important; }
+.v3-constellation-wrap.is-live [data-node], .v3-constellation-wrap.is-live .v3-constellation-tin { opacity: 1 !important; }
+.v3-constellation-wrap.is-live .v3-constellation-end { opacity: 1 !important; visibility: visible !important; transform: none !important; }
+.v3-constellation-wrap.is-live .v3-constellation-coin { opacity: 0 !important; }
+
+.v3-constellation-foot { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.v3-constellation-foot p { text-align: center; hyphens: manual; text-wrap: balance; }
+.v3-constellation-end {
+  margin: 0 0 clamp(14px, 2.2vh, 22px); font-family: var(--v3-caps-font); font-weight: 500; letter-spacing: 0.01em;
+  font-size: clamp(1rem, 1.4vw, 1.3rem); color: var(--v3-white);
+}
+.v3-constellation-pay { display: flex; flex-direction: column; align-items: center; }
+.v3-constellation-btn { border: 0; cursor: pointer; }
+.v3-constellation-btn[aria-busy='true'] { opacity: 0.85; }
+.v3-constellation-note { margin: 0.8rem 0 0; font-size: 0.86rem; color: rgba(242, 243, 243, 0.66); }
+.v3-constellation-status { margin: 0.3rem 0 0; min-height: 1.3em; font-size: 0.8rem; color: rgba(242, 243, 243, 0.66); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+@media (max-width: 760px) {
+  .v3-constellation-stage { height: auto; min-height: 0; padding-top: clamp(72px, 12vh, 96px); padding-bottom: 56px; }
+  .v3-constellation-wall img { object-position: 20% bottom; }
+  .v3-constellation-field { container-type: normal; flex: none; }
+  .v3-constellation-map { width: 100%; max-width: 420px; }
+  .v3-constellation-end { font-size: 1rem; }
+  .v3-constellation-at .v3-chip { font-size: 0.74rem; padding: 0.45em 0.8em 0.45em 0.6em; gap: 0.45em; }
+  .v3-constellation-at .v3-chip-icon { width: 14px; height: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v3-constellation-at.is-hit .v3-chip, .v3-constellation-node.is-hit .v3-constellation-ring, .v3-constellation-tin.is-hit .v3-constellation-halo { animation: none; }
+}

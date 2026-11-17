@@ -1,0 +1,85 @@
+/* Closing: dark Jogja night, Moto-style footer. */
+/* White mat behind the frame, so the page hands over from the light FAQ. */
+.v3-closing-stage { position: relative; background: var(--v3-paper); }
+.v3-closing-frame {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--v3-night);
+  clip-path: inset(0% 0% 0% 0% round 0px);
+}
+.v3-closing-frame .v3-wall { will-change: transform; transform-origin: 60% 60%; }
+
+.v3-closing .v3-closing-inner { padding-top: clamp(104px, 17vh, 190px); }
+.v3-closing .v3-closing-title { font-size: clamp(2.4rem, 6.6vw, 7rem); max-width: 11em; }
+
+/* Footer row: no separator lines, just space. */
+.v3-closing .v3-closing-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px clamp(24px, 3vw, 44px);
+  padding-top: clamp(40px, 7vh, 72px);
+  padding-bottom: clamp(20px, 3vh, 32px);
+  font-size: 0.95rem;
+  color: var(--v3-soft);
+}
+.v3-closing-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: auto;
+  font-family: var(--v3-caps-font);
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  color: var(--v3-white);
+}
+.v3-closing-foot a {
+  color: var(--v3-white);
+  text-decoration: underline;
+  text-decoration-color: rgba(242, 243, 243, 0.3);
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.25s;
+}
+.v3-closing-foot a:hover { text-decoration-color: currentColor; }
+.v3-closing-foot a:focus-visible { outline: 2px solid var(--v3-money); outline-offset: 4px; border-radius: 3px; }
+
+/* The giant name, cropped by the bottom edge of the page. */
+.v3-closing-end { position: relative; height: 15.5vw; overflow: hidden; pointer-events: none; }
+.v3-closing-word {
+  position: absolute;
+  left: 50%;
+  bottom: -5.6vw;
+  transform: translateX(-50%);
+  display: flex;
+  font-family: var(--v3-caps-font);
+  font-weight: 600;
+  font-size: 24.5vw;
+  line-height: 0.8;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+  user-select: none;
+}
+.v3-closing-word span {
+  display: inline-block;
+  background: linear-gradient(180deg, rgba(242, 243, 243, 0.16) 0%, rgba(242, 243, 243, 0.03) 78%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@media (max-width: 760px) {
+  /* Phones: the flat night sky carries the words, the city sits below. */
+  .v3-closing-frame { background: #04111d; }
+  .v3-closing-frame .v3-wall {
+    top: auto;
+    height: 56%;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 32%);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 32%);
+  }
+  .v3-closing .v3-closing-inner { padding-top: 96px; }
+  .v3-closing-brand { flex-basis: 100%; margin-right: 0; }
+  .v3-closing .v3-closing-foot { gap: 12px 24px; font-size: 0.9rem; }
+  .v3-closing-end { height: 17vw; }
+}

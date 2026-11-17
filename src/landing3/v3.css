@@ -1,0 +1,142 @@
+/*
+ * Allpaid V3 landing: Moto-style structure (dark stone, caps headlines, pill
+ * buttons, glass chips, full-bleed hyper-real walls) with Hozon-clean light
+ * sections. Scoped to .v3 so the app pages keep their own styles.
+ */
+.v3 {
+  --v3-night: #0a0b0c;
+  --v3-stone: #121416;
+  --v3-ink: #0e1011;
+  --v3-paper: #ffffff;
+  --v3-mist: #f3f4f3;
+  --v3-white: #f2f3f3;
+  --v3-soft: rgba(242, 243, 243, 0.68);
+  --v3-faint: rgba(242, 243, 243, 0.42);
+  --v3-ink-soft: rgba(14, 16, 17, 0.62);
+  --v3-money: #0ac18e;
+  --v3-refused: #ff6b5e;
+  --v3-pill: #e6e8e8;
+  --v3-glass: rgba(10, 11, 12, 0.55);
+  --v3-glass-line: rgba(255, 255, 255, 0.12);
+  --v3-caps-font: 'Inter Tight', 'Archivo', system-ui, sans-serif;
+  --v3-body-font: 'Nunito Sans', system-ui, sans-serif;
+  --v3-pad: clamp(20px, 4vw, 64px);
+  background: var(--v3-night);
+  color: var(--v3-white);
+  font-family: var(--v3-body-font);
+  overflow-x: clip;
+}
+
+/* Lenis */
+html.lenis-on, html.lenis-on body { height: auto; }
+.lenis-on.lenis-smooth { scroll-behavior: auto !important; }
+.lenis-on.lenis-stopped { overflow: hidden; }
+
+/* Scenes */
+.v3-scene { position: relative; min-height: 100svh; isolation: isolate; overflow: clip; }
+.v3-scene--dark { background: var(--v3-night); color: var(--v3-white); }
+.v3-scene--light { background: var(--v3-paper); color: var(--v3-ink); }
+.v3-inner { position: relative; z-index: 2; max-width: 1440px; margin: 0 auto; padding: clamp(96px, 14vh, 160px) var(--v3-pad); }
+
+/* Walls: full-bleed photographs */
+.v3-wall { position: absolute; inset: 0; z-index: 0; display: block; }
+.v3-wall img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.v3-shade-top::after, .v3-shade-bottom::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.v3-shade-top::after { background: linear-gradient(180deg, var(--v3-night) 0%, rgba(10, 11, 12, 0) 38%); }
+.v3-shade-bottom::after { background: linear-gradient(0deg, var(--v3-night) 0%, rgba(10, 11, 12, 0) 40%); }
+
+/* Caps headlines (Moto) */
+.v3-caps {
+  font-family: var(--v3-caps-font);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+  font-size: clamp(2.4rem, 6.2vw, 6.4rem);
+  margin: 0;
+  text-wrap: balance;
+}
+.v3-caps--center { text-align: center; }
+.v3-caps--left { text-align: left; }
+.v3-caps--right { text-align: right; }
+.v3-line { padding-bottom: 0.04em; }
+.v3-lede { font-size: clamp(1rem, 1.15vw, 1.2rem); line-height: 1.6; max-width: 34em; color: var(--v3-soft); margin: 1.4rem 0 0; }
+.v3-scene--light .v3-lede { color: var(--v3-ink-soft); }
+.v3-caps--center + .v3-lede, .v3-lede.is-center { margin-left: auto; margin-right: auto; text-align: center; }
+
+/* Pills */
+.v3-pill {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+  min-height: 52px; padding: 0 2rem; border-radius: 999px;
+  font-family: 'Avenir Next', 'Avenir', var(--v3-body-font); font-weight: 600; font-size: 1rem; letter-spacing: 0.01em;
+  text-decoration: none; transition: transform .35s cubic-bezier(.2,.8,.2,1), background .25s, color .25s;
+}
+.v3-pill:hover { transform: translateY(-2px); }
+.v3-pill:focus-visible { outline: 2px solid var(--v3-money); outline-offset: 3px; }
+.v3-pill--light { background: var(--v3-pill); color: var(--v3-night); }
+.v3-pill--light:hover { background: #fff; }
+.v3-pill--money { background: var(--v3-money); color: #03251b; }
+.v3-pill--ghost { background: transparent; color: currentColor; box-shadow: inset 0 0 0 1px currentColor; }
+.v3-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 2.2rem; }
+.v3-actions.is-center { justify-content: center; }
+
+/* Glass chips (Moto's status chips) */
+.v3-chip {
+  display: inline-flex; align-items: center; gap: .55em; padding: .55em 1em .55em .7em; border-radius: 999px;
+  background: var(--v3-glass); border: 1px solid var(--v3-glass-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  font-size: .9rem; color: var(--v3-white); white-space: nowrap;
+}
+.v3-chip-icon { width: 16px; height: 16px; flex: none; }
+.v3-chip--money .v3-chip-icon { color: var(--v3-money); }
+.v3-chip--refused .v3-chip-icon { color: var(--v3-refused); }
+.v3-chip--plain .v3-chip-icon { color: var(--v3-faint); }
+.v3-scene--light .v3-chip { background: rgba(255,255,255,.75); border-color: rgba(14,16,17,.1); color: var(--v3-ink); }
+
+/* Coin cursor */
+.v3-cursor { position: fixed; left: 0; top: 0; z-index: 1000; pointer-events: none; width: 0; height: 0; }
+.v3-cursor > span { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); transition: opacity .25s, transform .35s cubic-bezier(.2,.8,.2,1); }
+.v3-cursor-ring { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.85); mix-blend-mode: difference; }
+.v3-cursor-coin { width: 30px; height: 30px; border-radius: 50%; opacity: 0; background: radial-gradient(circle at 35% 30%, #fff, #c9ced2 45%, #8b9298 100%); box-shadow: inset 0 0 0 2px rgba(255,255,255,.5), 0 6px 16px rgba(0,0,0,.35); }
+.v3-cursor-split { width: 44px; height: 44px; opacity: 0; }
+.v3-cursor-split i { position: absolute; width: 12px; height: 12px; border-radius: 50%; background: var(--v3-money); left: 16px; top: 16px; transition: transform .4s cubic-bezier(.2,.8,.2,1); }
+.v3-cursor[data-mode="hidden"] > span { opacity: 0; }
+.v3-cursor[data-mode="link"] .v3-cursor-ring { transform: translate(-50%, -50%) scale(1.8); }
+.v3-cursor[data-mode="coin"] .v3-cursor-ring { opacity: 0; }
+.v3-cursor[data-mode="coin"] .v3-cursor-coin { opacity: 1; }
+.v3-cursor[data-mode="split"] .v3-cursor-ring { opacity: 0; }
+.v3-cursor[data-mode="split"] .v3-cursor-split { opacity: 1; }
+.v3-cursor[data-mode="split"] .v3-cursor-split i:nth-child(1) { transform: translate(-14px, -14px); }
+.v3-cursor[data-mode="split"] .v3-cursor-split i:nth-child(2) { transform: translate(14px, -14px); }
+.v3-cursor[data-mode="split"] .v3-cursor-split i:nth-child(3) { transform: translate(-14px, 14px); }
+.v3-cursor[data-mode="split"] .v3-cursor-split i:nth-child(4) { transform: translate(14px, 14px); }
+html.v3-has-cursor .v3, html.v3-has-cursor .v3 a, html.v3-has-cursor .v3 button { cursor: none; }
+
+/* Stubs (replaced by real sections) */
+.v3-stub { display: grid; place-items: center; min-height: 60svh; color: var(--v3-faint); font-family: var(--v3-caps-font); }
+
+@media (prefers-reduced-motion: reduce) {
+  .v3-pill, .v3-cursor > span { transition: none; }
+}
+
+/* Moto-style nav on the landing: transparent over the scenes, centred links, pill on the right.
+   The landing slides up under the sticky nav so the hero runs full-bleed behind it. */
+.nav--v3 { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; transition: background .4s, color .4s; }
+.nav--v3 .nav-in { width: min(100% - 2 * clamp(20px, 4vw, 64px), 1440px); min-height: 72px; display: grid; grid-template-columns: 1fr auto auto 1fr; column-gap: 1.6rem; }
+.nav--v3 .nav-links { display: contents; }
+.nav--v3 .nav-link { color: rgba(242,243,243,.72); font-family: 'Avenir Next', 'Avenir', 'Nunito Sans', sans-serif; font-weight: 600; }
+.nav--v3 .nav-link:hover { color: #fff; background: transparent; }
+.nav--v3 .btn { justify-self: end; grid-column: 4; border-radius: 999px; background: #e6e8e8; color: #0a0b0c; min-height: 44px; padding: 0 1.4rem; font-weight: 600; border: 0; }
+.nav--v3 .btn:hover { background: #fff; }
+.nav--v3.is-scrolled { background: rgba(10,11,12,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.nav--v3.on-light { background: rgba(255,255,255,.72); }
+.nav--v3.on-light .logo-word, .nav--v3.on-light .nav-link { color: #0e1011; }
+.nav--v3.on-light .btn { background: #0e1011; color: #fff; }
+.landing-v3 { margin-top: -72px; }
+@media (max-width: 760px) {
+  .nav--v3 .nav-in { grid-template-columns: 1fr auto; }
+  .nav--v3 .nav-link { display: none; }
+  .nav--v3 .btn { grid-column: 2; grid-row: 1; }
+}
+
+/* base.css left-aligns and hyphenates every paragraph; the landing sets its own. */
+.v3 p { text-align: inherit; hyphens: manual; -webkit-hyphens: manual; }

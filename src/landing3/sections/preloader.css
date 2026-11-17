@@ -1,0 +1,29 @@
+/* Preloader: black curtain, the tin mark filling, four quiet corners. */
+.v3-preloader {
+  position: fixed; inset: 0; z-index: 2000;
+  display: grid; place-items: center;
+  background: #0a0b0c; color: #f2f3f3;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  pointer-events: auto;
+}
+.v3-preloader-mark { position: relative; width: 88px; height: 88px; }
+.v3-preloader-base, .v3-preloader-fill { position: absolute; inset: 0; display: block; line-height: 0; }
+.v3-preloader-base { color: rgba(242, 243, 243, 0.16); --money: rgba(242, 243, 243, 0.16); }
+.v3-preloader-fill { color: #f2f3f3; --money: #0ac18e; clip-path: inset(100% 0% 0% 0%); }
+.v3-preloader-glow {
+  position: absolute; left: 50%; top: 50%; width: 260px; height: 260px; margin: -130px 0 0 -130px;
+  border-radius: 50%; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, rgba(242, 243, 243, 0.10) 0%, rgba(242, 243, 243, 0.03) 40%, rgba(10, 11, 12, 0) 70%);
+}
+.v3-preloader-corner {
+  position: absolute; font-size: 0.8rem; letter-spacing: 0.02em; color: rgba(242, 243, 243, 0.62);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.v3-preloader-corner--tl { left: clamp(16px, 3vw, 40px); top: clamp(16px, 3vw, 36px); }
+.v3-preloader-corner--tr { right: clamp(16px, 3vw, 40px); top: clamp(16px, 3vw, 36px); }
+.v3-preloader-corner--bl { left: clamp(16px, 3vw, 40px); bottom: clamp(16px, 3vw, 36px); }
+.v3-preloader-corner--br { right: clamp(16px, 3vw, 40px); bottom: clamp(16px, 3vw, 36px); }
+
+@media (max-width: 420px) {
+  .v3-preloader-corner { font-size: 0.72rem; }
+}

@@ -45,9 +45,9 @@ export function Banner() {
   );
 }
 
-export function Nav({ current }: { current?: 'home' | 'new' | 'try' | 'jar' }) {
+export function Nav({ current, variant }: { current?: 'home' | 'new' | 'try' | 'jar'; variant?: 'v3' }) {
   return (
-    <header className="nav">
+    <header className={variant === 'v3' ? 'nav nav--v3' : 'nav'}>
       <div className="nav-in wrap">
         <a href="/" onClick={onLinkClick} className="nav-home" aria-label="Allpaid home">
           <Logo />
