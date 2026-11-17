@@ -17,7 +17,7 @@ export function Hero() {
                 <a className="btn btn-money" href="/try" onClick={onLinkClick}>Try it with play money, no wallet <span aria-hidden="true">↗</span></a>
                 <a className="btn" href="/new" onClick={onLinkClick}>Make your team's jar</a>
               </div>
-              <p className="hint"><a href="/new" onClick={onLinkClick}>Real BCH in 30 seconds: the split comes back to your own wallet.</a></p>
+              <p className="hint"><a href="/new" onClick={onLinkClick}>Test with real BCH: the split comes back to your own wallet.</a></p>
             </div>
             <Suspense fallback={<p className="hero-payment">Preparing the demo jar…</p>}><HeroPayment /></Suspense>
           </div>

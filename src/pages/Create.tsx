@@ -68,6 +68,14 @@ export function Create() {
   const [walletFill, setWalletFill] = useState(false);
   const [walletProblem, setWalletProblem] = useState('');
   const [walletFilled, setWalletFilled] = useState(false);
+  // If pairing takes long, point to the path that works with any wallet.
+  const [walletSlow, setWalletSlow] = useState(false);
+  useEffect(() => {
+    setWalletSlow(false);
+    if (!walletFill || wc.state === 'connected') return;
+    const timer = setTimeout(() => setWalletSlow(true), 20_000);
+    return () => clearTimeout(timer);
+  }, [walletFill, wc.state]);
 
   useEffect(() => {
     if (!walletFill) return;
@@ -300,6 +308,11 @@ export function Create() {
         {(net === 'mainnet' || net === 'chipnet') && (
           <>
             <p className="hint">Your wallet shares its public keys only. The split pays these addresses, so the money comes back to you.</p>
+            {walletSlow && walletFill && (
+              <p className="hint" role="status">
+                No wallet yet? Use “Test with two of my own addresses”, paste two receive addresses from any BCH wallet, then pay the jar's QR.
+              </p>
+            )}
             {walletFilled && <p className="hint" role="status">Empty member rows filled from your wallet.</p>}
             {(walletProblem || wc.error) && <p className="problem" role="alert">{walletProblem || 'Could not pair with your wallet. Please try again.'}</p>}
             {wc.uri && wc.qrUri && (
