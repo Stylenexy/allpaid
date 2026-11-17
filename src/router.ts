@@ -15,7 +15,7 @@ function read(): Route {
 
 export function navigate(href: string) {
   history.pushState(null, '', href);
-  window.dispatchEvent(new Event('splitjar:navigate'));
+  window.dispatchEvent(new Event('allpaid:navigate'));
   window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
 }
 
@@ -25,11 +25,11 @@ export function useRoute(): Route {
     const update = () => setRoute(read());
     window.addEventListener('popstate', update);
     window.addEventListener('hashchange', update);
-    window.addEventListener('splitjar:navigate', update);
+    window.addEventListener('allpaid:navigate', update);
     return () => {
       window.removeEventListener('popstate', update);
       window.removeEventListener('hashchange', update);
-      window.removeEventListener('splitjar:navigate', update);
+      window.removeEventListener('allpaid:navigate', update);
     };
   }, []);
   return route;

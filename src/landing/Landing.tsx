@@ -9,7 +9,7 @@ import { WhyBch } from './sections/WhyBch';
 import { UseCases } from './sections/UseCases';
 import { Cta } from './sections/Cta';
 
-const SECTIONS = [Hero, Story, HowItWorks, SplitTrees, CheatScene, WhyBch, UseCases, Cta];
+const SECTIONS = [Hero, SplitTrees, Story, HowItWorks, CheatScene, WhyBch, UseCases, Cta];
 
 export function Landing() {
   return (

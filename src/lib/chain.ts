@@ -10,10 +10,10 @@ import {
   type Utxo,
 } from 'cashscript';
 import { binToHex, decodeTransaction, hashTransaction, hexToBin } from '@bitauth/libauth';
-import artifact from '../contract/splitjar.artifact';
+import artifact from '../contract/allpaid.artifact';
 import { contractArgs, splitPot, subConfig, SPLIT_FEE, type JarConfig, type Member, type Net, lockingBytecodeOf } from './jar';
 
-export type SplitjarContract = Contract<typeof artifact>;
+export type AllpaidContract = Contract<typeof artifact>;
 
 const ELECTRUM_HOSTS: Record<Exclude<Net, 'sandbox'>, string[]> = {
   mainnet: ['bch.imaginary.cash', 'electroncash.de', 'bch.loping.net'],
@@ -46,7 +46,7 @@ export async function getProvider(net: Net): Promise<NetworkProvider> {
   throw new Error(`No Electrum server answered for ${net}. ${errorText(lastError)}`);
 }
 
-export function makeContract(config: JarConfig, provider: NetworkProvider): SplitjarContract {
+export function makeContract(config: JarConfig, provider: NetworkProvider): AllpaidContract {
   return new Contract(artifact, contractArgs(resolveJar(config)), { provider, contractType: 'p2sh32' });
 }
 
@@ -120,7 +120,7 @@ function finish(hex: string): BuiltTx {
  * The honest split. Fully determined by the coin it spends: every device that
  * builds it gets the same transaction and the same txid.
  */
-export function buildDistribute(contract: SplitjarContract, jar: JarConfig, utxo: SpendableUtxo): BuiltTx {
+export function buildDistribute(contract: AllpaidContract, jar: JarConfig, utxo: SpendableUtxo): BuiltTx {
   const config = resolveJar(jar);
   const shares = splitPot(utxo.satoshis, config.members.map((m) => m.bps), SPLIT_FEE);
   const builder = new TransactionBuilder({ provider: contract.provider });
@@ -130,7 +130,7 @@ export function buildDistribute(contract: SplitjarContract, jar: JarConfig, utxo
 }
 
 /** Join two coins that are each too small to split. They stay in the jar. */
-export function buildMerge(contract: SplitjarContract, a: SpendableUtxo, b: SpendableUtxo): BuiltTx {
+export function buildMerge(contract: AllpaidContract, a: SpendableUtxo, b: SpendableUtxo): BuiltTx {
   const builder = new TransactionBuilder({ provider: contract.provider });
   builder.addInput(a, contract.unlock.merge());
   builder.addInput(b, contract.unlock.merge());
@@ -142,7 +142,7 @@ export function buildMerge(contract: SplitjarContract, a: SpendableUtxo, b: Spen
  * The cheat: same coin, same unlock, but the whole pot goes to member 1
  * (the one who would have held the tin). The network must refuse it.
  */
-export function buildCheat(contract: SplitjarContract, config: JarConfig, utxo: SpendableUtxo): BuiltTx {
+export function buildCheat(contract: AllpaidContract, config: JarConfig, utxo: SpendableUtxo): BuiltTx {
   const builder = new TransactionBuilder({ provider: contract.provider });
   builder.addInput(utxo, contract.unlock.distribute());
   builder.addOutput({ to: resolveJar(config).members[0].address, amount: utxo.satoshis - SPLIT_FEE });
@@ -153,7 +153,7 @@ export function buildCheat(contract: SplitjarContract, config: JarConfig, utxo: 
  * After the network refuses the cheat, find which contract line refused it,
  * by replaying the same transaction in CashScript's debugger.
  */
-export function explainCheat(contract: SplitjarContract, config: JarConfig, utxo: SpendableUtxo): { rule: string; line?: string } | null {
+export function explainCheat(contract: AllpaidContract, config: JarConfig, utxo: SpendableUtxo): { rule: string; line?: string } | null {
   const builder = new TransactionBuilder({ provider: contract.provider });
   builder.addInput(utxo, contract.unlock.distribute());
   builder.addOutput({ to: resolveJar(config).members[0].address, amount: utxo.satoshis - SPLIT_FEE });

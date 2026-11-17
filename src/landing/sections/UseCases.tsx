@@ -14,7 +14,7 @@ const CASES = [
   },
   {
     title: 'Events and street bands',
-    text: "A festival jar pays each act's jar, and each band splits its part again down to the crew. Where Splitjar started.",
+    text: "A festival jar pays each act's jar, and each band splits its part again down to the crew. Where Allpaid started.",
   },
 ];
 
@@ -22,7 +22,7 @@ export function UseCases() {
   return (
     <section className="sec cases">
       <div className="wrap">
-        <h2 className="sec-title">For teams that already get paid in Bitcoin Cash</h2>
+        <h2 className="sec-title">Made together.<br /><span className="chrome-type">Paid together.</span></h2>
         <ul className="case-list">
           {CASES.map((c) => (
             <li key={c.title}>

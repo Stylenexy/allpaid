@@ -1,5 +1,4 @@
-/* App chrome and the jar, create and tree components. Neutral on purpose:
-   every value comes from tokens.css so the look can be replaced later. */
+/* Allpaid's agreement, test bench and payment terminal share the Noir stage. */
 
 /* ---------- Banner (required by BCH BLAZE 2026) ---------- */
 .banner {
@@ -908,3 +907,47 @@ fieldset.field legend {
   gap: var(--s-3);
   align-items: center;
 }
+
+/* The inner pages are instruments: agreement, test bench and payment terminal. */
+.nav { background:rgba(9,13,16,.94); backdrop-filter:none; }
+.nav-link { min-height:44px; display:inline-flex; align-items:center; }
+.logo-word { font-size:1.4rem; }
+.footer-word { color:var(--text-soft); font-size:clamp(3rem,14vw,10rem); }
+.jar,.create { padding-top:var(--s-8); padding-bottom:var(--s-8); }
+.jar-name,.page-title { font-size:var(--step-5); max-width:16em; overflow-wrap:anywhere; }
+.jar-head { align-items:center; }
+.jar-head>div:first-child { min-width:0; flex:1 1 600px; }
+.net { display:block; margin-top:var(--s-4); margin-bottom:0; }
+.jar-sub { max-width:65ch; }
+.jar-grid { grid-template-columns:minmax(0,410px) minmax(0,1fr); gap:var(--s-7); margin-top:var(--s-7); }
+.pay { padding:var(--s-6); background:linear-gradient(150deg,var(--surface-3),var(--surface-1) 50%); border-color:var(--line-strong); }
+.pay-title { font-size:var(--step-3); }
+.jar-live .pay { position:sticky; top:88px; }
+.jar-sandbox .pay { border-radius:var(--r-modal); }
+.jar-side .side-title { font-size:var(--step-2); margin-top:var(--s-3); }
+.jar-side .tree-level { border-color:var(--money); }
+.jar-side .tree-level .tree-level { border-color:var(--nested); }
+.jar-side .leaf { border:0; padding:var(--s-3); background:var(--surface-1); }
+.jar-side .leaf-name { font-size:var(--step-0); }
+.cheat { padding:var(--s-6); background:var(--surface-1); border:0; }
+.status::before { content:'?'; width:auto; height:auto; background:none; border-radius:0; font-size:var(--step-1); }
+.status-watching::before { content:'?'; color:var(--money); background:none; }
+.status-offline::before { content:'!'; color:var(--refused); background:none; }
+.seg-btn,.chip { min-height:44px; }
+.create { max-width:1080px; }
+.agreement-intro { display:flex; justify-content:space-between; align-items:center; gap:var(--s-5); }
+.agreement-intro svg { color:var(--ice); flex:none; }
+.allocation-strip { display:flex; gap:var(--s-1); margin-top:var(--s-7); min-width:0; }
+.allocation-strip>div { flex-basis:0; min-width:0; padding:var(--s-4); background:var(--surface-2); border-radius:var(--r-control); overflow:hidden; }
+.allocation-strip>div:first-child { background:var(--money); color:var(--on-money); }
+.allocation-strip strong { display:block; font-family:var(--font-display); font-size:var(--step-3); overflow-wrap:anywhere; }
+.allocation-strip span { display:block; font-size:var(--step--1); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.create-form { margin-top:var(--s-7); gap:var(--s-6); }
+.row { background:transparent; border:0; padding:var(--s-4) 0; border-radius:0; }
+.row-n { color:var(--ice); }
+.create-preview { border:1px solid var(--line-strong); padding:var(--s-5); background:var(--surface-1); }
+.preview-addr { overflow-wrap:anywhere; }
+.refusal-msg { font-family:var(--font-body); }
+@media(max-width:900px) { .jar-grid { grid-template-columns:minmax(0,1fr); } .jar-live .pay { position:static; } }
+@media(max-width:720px) { .agreement-intro svg { width:70px; height:70px; } .create .page-title { font-size:var(--step-4); } .allocation-strip>div { padding:var(--s-3) var(--s-2); } .allocation-strip strong { font-size:var(--step-1); } }
+@media(max-width:480px) { .nav-link { display:none; } .pay,.cheat { padding:var(--s-4); } .jar-head-actions { flex-wrap:wrap; } .jar-name { font-size:var(--step-4); } .row { gap:var(--s-2); } }

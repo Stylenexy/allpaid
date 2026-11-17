@@ -1,18 +1,19 @@
 /*
- * Splitjar embed: one line on any page puts a "Pay this team on BCH" button there.
+ * Allpaid embed: one line on any page puts a "Pay this team on BCH" button there.
  *
- *   <script src="https://YOUR-SPLITJAR-SITE/embed.js" data-jar="JAR-LINK-OR-CODE"></script>
+ *   <script src="https://YOUR-ALLPAID-SITE/embed.js" data-allpaid="JAR-LINK-OR-CODE"></script>
  *
- * Optional: data-label="Tip the show". The button opens the jar page, where the
+ * Legacy data-jar is also accepted. Optional: data-label="Tip the show".
+ * The button opens the jar page, where the
  * payer scans the QR or connects a wallet. No tracking, no network requests.
  */
 (function () {
   var script = document.currentScript;
   if (!script) return;
-  var jar = script.getAttribute('data-jar') || '';
+  var jar = script.getAttribute('data-allpaid') || script.getAttribute('data-jar') || '';
   var hash = jar.indexOf('#') >= 0 ? jar.slice(jar.indexOf('#') + 1) : jar;
   if (!/^[A-Za-z0-9_-]+$/.test(hash)) {
-    console.warn('Splitjar embed: data-jar must be a jar link or code');
+    console.warn('Allpaid embed: data-allpaid (or data-jar) must be a jar link or code');
     return;
   }
   var origin = new URL(script.src, location.href).origin;

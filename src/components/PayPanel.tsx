@@ -18,7 +18,7 @@ export function PayPanel({ config, snap, engine }: { config: JarConfig; snap: Ja
   const customSats = custom ? parseBch(custom) : null;
   const chosen = customSats ?? amount;
   const tooSmall = chosen < engine.min;
-  const uri = `${snap.address}?amount=${bip21Amount(chosen)}&message=${encodeURIComponent(`Splitjar: ${config.name}`)}`;
+  const uri = `${snap.address}?amount=${bip21Amount(chosen)}&message=${encodeURIComponent(`Allpaid: ${config.name}`)}`;
   const sandbox = config.net === 'sandbox';
   const [copied, setCopied] = useState(false);
 
@@ -114,7 +114,7 @@ type PayState =
 
 function WizardPay({ config, jarAddress, amount, disabled }: { config: JarConfig; jarAddress: string; amount: bigint; disabled: boolean }) {
   const icon = useMemo(() => `${location.origin}/icon-192.png`, []);
-  const wc = useWizardConnect({ dappName: 'Splitjar', dappIcon: icon, sessionKey: 'splitjar-wizardconnect' });
+  const wc = useWizardConnect({ dappName: 'Allpaid', dappIcon: icon, sessionKey: 'allpaid-wizardconnect' });
   const [pay, setPay] = useState<PayState>({ step: 'idle' });
   const abort = useRef<AbortController | null>(null);
 
@@ -150,7 +150,7 @@ function WizardPay({ config, jarAddress, amount, disabled }: { config: JarConfig
         scan,
         jarAddress,
         amount,
-        prompt: `Pay ${bch(amount)} BCH into the "${config.name}" Splitjar jar`,
+        prompt: `Pay ${bch(amount)} BCH into the "${config.name}" Allpaid jar`,
         signal: abort.current.signal,
       });
       const fresh = await scanWallet(wc.manager, config.net, provider).catch(() => scan);
@@ -232,17 +232,17 @@ function WizardPay({ config, jarAddress, amount, disabled }: { config: JarConfig
           subtitle="Scan this with a wallet that supports WizardConnect, or copy the link into a desktop wallet."
           theme={{
             backdropColor: 'rgba(0, 0, 0, 0.72)',
-            dialogBackground: '#161616',
-            headerBackground: '#161616',
-            titleColor: '#f5f5f5',
-            subtitleColor: '#a3a3a3',
-            qrForeground: '#0d0d0d',
-            qrBackground: '#ffffff',
-            uriRowBackground: '#0d0d0d',
-            uriTextColor: '#a3a3a3',
-            borderColor: 'rgba(255,255,255,0.18)',
-            closeButtonColor: '#a3a3a3',
-            copyButtonColor: '#0ac18e',
+            dialogBackground: 'var(--surface-1)',
+            headerBackground: 'var(--surface-1)',
+            titleColor: 'var(--text)',
+            subtitleColor: 'var(--text-soft)',
+            qrForeground: 'var(--qr-ink)',
+            qrBackground: 'var(--qr-bg)',
+            uriRowBackground: 'var(--bg)',
+            uriTextColor: 'var(--text-soft)',
+            borderColor: 'var(--line-strong)',
+            closeButtonColor: 'var(--text-soft)',
+            copyButtonColor: 'var(--money)',
             qrSize: 260,
           }}
         />

@@ -1,40 +1,32 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { onLinkClick } from '../../router';
-
-const HeroDemo = lazy(() => import('../LiveDemo'));
-
-/** Section 1: what it is, for whom, and a live split you can trigger. */
+import vessel from '../noir-vessel.svg?raw';
+const HeroPayment = lazy(() => import('../HeroPayment').then((m) => ({ default: m.HeroPayment })));
 export function Hero() {
+  const stage = useRef<HTMLElement>(null);
+  useEffect(() => {
+    let dispose: (() => void) | undefined;
+    let alive = true;
+    import('../motion').then(({ mountMotion }) => {
+      if (alive && stage.current) dispose = mountMotion(stage.current);
+    });
+    return () => { alive = false; dispose?.(); };
+  }, []);
   return (
-    <section className="sec hero">
+    <section className="sec hero" ref={stage}>
       <div className="wrap hero-in">
+        <h1 className="hero-title">One QR.<br /><span className="chrome-type">Everyone gets paid.</span></h1>
+        <div className="hero-art" dangerouslySetInnerHTML={{ __html: vessel }} />
+        <div className="hero-foot">
         <div className="hero-copy">
-          <h1 className="hero-title">
-            One QR.
-            <br />
-            Everyone gets paid.
-          </h1>
-          <p className="hero-lead">
-            Splitjar is a Bitcoin Cash address that pays a whole team. Pay it once, and a covenant pays every member their share within
-            seconds. No treasurer, and no way to change the cut. A member can be another team's Splitjar, so money can flow down a whole
-            waterfall: organiser, band, crew.
-          </p>
+          <p className="hero-lead">A shared tip can with rules enforced by a Bitcoin Cash covenant. No treasurer. No custody.</p>
           <div className="ctas">
-            <a className="btn btn-primary" href="/new" onClick={onLinkClick}>
-              Make a Splitjar for your team
-            </a>
-            <a className="btn" href="#cheat">
-              Try to cheat it
-            </a>
+            <a className="btn btn-money" href="/new" onClick={onLinkClick}>Make your team's jar <span aria-hidden="true">↗</span></a>
+            <a className="btn btn-quiet" href="#split">Follow the money <span aria-hidden="true">↓</span></a>
           </div>
-          <p className="hero-small">
-            Free and open source. No account. Payers use any Bitcoin Cash wallet, or connect one with WizardConnect. Close the tab and members
-            still get paid: a keeper sends the split.
-          </p>
         </div>
-        <Suspense fallback={<div className="demo-card is-loading">Starting the play-money network…</div>}>
-          <HeroDemo />
-        </Suspense>
+        <Suspense fallback={<p className="hero-payment">Preparing the demo jar…</p>}><HeroPayment /></Suspense>
+        </div>
       </div>
     </section>
   );

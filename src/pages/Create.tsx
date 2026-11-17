@@ -18,6 +18,7 @@ import {
 import { jarAddress } from '../lib/chain';
 import { bch } from '../lib/format';
 import { navigate, onLinkClick } from '../router';
+import { TinMark } from '../components/TinMark';
 
 interface Row {
   name: string;
@@ -101,11 +102,16 @@ export function Create() {
 
   return (
     <main className="wrap create">
-      <h1 className="page-title">Make a jar for your group</h1>
+      <header className="agreement-intro"><h1 className="page-title">Write the split.<br /><span className="chrome-type">Lock it in.</span></h1>
+      <TinMark size={120} /></header>
       <p className="lead">
         Write down who is in the group and how the money splits. That is the whole setup: the jar's address is computed from it, right here,
         and no server keeps a copy. To nest a jar (say, your crew's), make that jar first, then paste its link as a member here.
       </p>
+
+      <div className="allocation-strip" aria-label="Your current allocation">
+        {rows.map((row, i) => <div key={i} style={{ flexGrow: Math.max(1, toBps(row.pct) || 0) }}><strong>{row.pct || '0'}%</strong><span>{row.name || `Member ${i + 1}`}</span></div>)}
+      </div>
 
       <form
         className="create-form"
@@ -131,7 +137,7 @@ export function Create() {
           </div>
           <fieldset className="field net-toggle">
             <legend>Network</legend>
-            <div className="seg" role="radiogroup">
+            <div className="seg" role="radiogroup" aria-label="Network">
               {(['mainnet', 'chipnet'] as const).map((n) => (
                 <button
                   key={n}

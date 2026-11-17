@@ -1,22 +1,26 @@
 /*
- * Splitjar design tokens: the ONLY place colours, fonts, sizes and spacing are set.
- * Temporary neutral palette (matte black + Bitcoin Cash green + white) until the
- * visual direction is picked. Swap values here; components only use these names.
+ * Allpaid design tokens: the ONLY place colours, fonts, sizes and spacing are set.
+ * Covenant Noir: a matte stage, reflective metal and green payment routes.
  * Contrast ratios measured with WCAG formula against --bg unless noted.
  */
 :root {
   /* Surfaces: matte black, lighter steps for raised elements */
-  --bg: #0d0d0d;
-  --surface-1: #161616; /* cards */
-  --surface-2: #1f1f1f; /* hover, active */
-  --surface-3: #292929; /* overlays */
+  --bg: #090d10;
+  --surface-1: #111e27;
+  --surface-2: #1a2c39;
+  --surface-3: #243b4b;
+  --stage: #172d3d;
+  --ice: #dceaff;
+  --sky: #5299f8;
+  --nested: #ff8050;
+  --metal: linear-gradient(110deg, #dceaff 10%, #fff 35%, #a9b9c3 58%, #dceaff 78%, #fff);
   --line: rgba(255, 255, 255, 0.1);
   --line-strong: rgba(255, 255, 255, 0.2);
 
   /* Text */
-  --text: #f5f5f5;       /* 17.8:1 */
-  --text-soft: #a3a3a3;  /* 7.7:1, 7.2:1 on --surface-1 */
-  --text-faint: #8c8c8c; /* 5.8:1, 5.4:1 on --surface-1 */
+  --text: #ffffff;
+  --text-soft: #a9b9c3;
+  --text-faint: #a9b9c3;
 
   /* Money and the action that moves it: Bitcoin Cash green */
   --money: #0ac18e;      /* 8.4:1, 7.8:1 on --surface-1 */
@@ -37,9 +41,9 @@
   --qr-ink: #0d0d0d;
 
   /* Type */
-  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'Instrument Sans Variable', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-button: 'Avenir Next', Avenir, 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Archivo', sans-serif;
+  --font-body: 'Nunito Sans', sans-serif;
+  --font-button: 'Avenir Next', Avenir, 'Nunito Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; /* addresses and hashes only */
 
   /* Type scale, ratio 1.25 */
@@ -49,7 +53,7 @@
   --step-2: 1.5625rem;
   --step-3: clamp(1.75rem, 1.4rem + 1.6vw, 2.44rem);
   --step-4: clamp(2.1rem, 1.6rem + 2.6vw, 3.2rem);
-  --step-5: clamp(2.5rem, 1.7rem + 4.2vw, 4.8rem);
+  --step-5: clamp(2.7rem, 1.5rem + 5.7vw, 6.5rem);
 
   /* Space (multiples of 4) */
   --s-1: 4px;
@@ -68,6 +72,6 @@
   --r-card: 14px;
   --r-modal: 18px;
 
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --page: 1180px;
 }

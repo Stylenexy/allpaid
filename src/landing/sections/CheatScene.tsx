@@ -10,7 +10,7 @@ export function CheatScene() {
     <section className="sec cheat-sec" id="cheat">
       <div className="wrap two-col">
         <div>
-          <h2 className="sec-title">Now try to cheat it.</h2>
+          <h2 className="sec-title">Try to cheat.<br /><span className="chrome-type">The lid stays shut.</span></h2>
           <p className="sec-text">
             Say {first} wants the whole tip. She builds a transaction that spends the jar's coin and pays only herself. It has the right input
             and a fair-looking fee. It goes straight to the Bitcoin Cash VM, with no check on our side first.

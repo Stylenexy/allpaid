@@ -1,15 +1,19 @@
 import { SAMPLE_BAND } from '../../lib/sample';
 import { levelCount, walletCount } from '../../lib/jar';
+import { lazy, Suspense } from 'react';
+const HeroDemo = lazy(() => import('../LiveDemo'));
 
 /** Section 4: jars inside jars. */
 export function SplitTrees() {
   const crew = SAMPLE_BAND.members.find((m) => m.jar);
   return (
-    <section className="sec trees">
-      <div className="wrap narrow">
-        <h2 className="sec-title">A revenue waterfall, in one payment</h2>
+    <section className="sec trees" id="split">
+      <div className="wrap">
+        <div className="scene-head"><h2 className="sec-title">The lid<br /><span className="chrome-type">is the law.</span></h2>
+        <p className="sec-text">Agree on the shares once. A Bitcoin Cash covenant enforces the split, so no treasurer gets to rewrite the deal.</p></div>
+        <div className="split-instrument"><Suspense fallback={<p>Loading the play-money instrument…</p>}><HeroDemo /></Suspense></div>
         <p className="sec-text">
-          A member's address can be another Splitjar. A festival jar can pay each act's jar, and a band's jar pays its{' '}
+          A member's address can be another Allpaid jar. A festival jar can pay each act's jar, and a band's jar pays its{' '}
           {crew?.name.toLowerCase() ?? 'crew'}'s jar like any other member; that jar splits again among {crew?.jar?.members.map((m) => m.name).join(', ')}. One payment,{' '}
           {levelCount(SAMPLE_BAND.members)} levels, {walletCount(SAMPLE_BAND.members)} wallets.
         </p>

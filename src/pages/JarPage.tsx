@@ -46,7 +46,7 @@ function JarView({ config }: { config: JarConfig }) {
   const shareLink = `${location.origin}/jar#${encodeJar(config)}`;
   const share = async () => {
     try {
-      if (navigator.share) await navigator.share({ title: `${config.name} on Splitjar`, url: shareLink });
+      if (navigator.share) await navigator.share({ title: `${config.name} on Allpaid`, url: shareLink });
       else {
         await navigator.clipboard.writeText(shareLink);
         setShared(true);
@@ -60,11 +60,11 @@ function JarView({ config }: { config: JarConfig }) {
   const nested = config.members.some((m) => m.jar);
 
   return (
-    <main className="jar wrap">
+    <main className={`jar wrap ${config.net === 'sandbox' ? 'jar-sandbox' : 'jar-live'}`}>
       <div className="jar-head">
         <div>
-          <p className={`net net-${config.net}`}>{NET_LABEL[config.net]}</p>
-          <h1 className="jar-name">{config.name}</h1>
+          <h1 className="jar-name">{config.net === 'sandbox' ? <>Put the rule<br /><span className="chrome-type">to the test.</span></> : config.name}</h1>
+          <p className={`net net-${config.net}`}>{NET_LABEL[config.net]}{config.net === 'sandbox' ? ` · ${config.name}` : ''}</p>
           <p className="jar-sub">
             {config.members.length} members ·{' '}
             {config.members.map((m) => `${m.name}${m.jar ? ' (jar)' : ''} ${percent(m.bps)}`).join(', ')}
@@ -143,7 +143,7 @@ function JarView({ config }: { config: JarConfig }) {
           )}
         </p>
         <p className="hint">
-          Source of the contract: <a href={`${SITE.repoUrl}/blob/main/contracts/Splitjar.cash`}>contracts/Splitjar.cash</a>. This page
+          Source of the contract: <a href={`${SITE.repoUrl}/blob/main/contracts/Allpaid.cash`}>contracts/Allpaid.cash</a>. This page
           splits within seconds while it is open. With every page closed, the keeper (a small program anyone can run, also scheduled on our
           repository) sends the split on its next round, every few minutes. Every copy builds the same transaction, so it does not matter who
           sends it.

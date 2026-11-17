@@ -7,11 +7,11 @@ const Create = lazy(() => import('./pages/Create').then((m) => ({ default: m.Cre
 const JarRoute = lazy(() => import('./pages/JarPage').then((m) => ({ default: m.JarRoute })));
 
 const TITLES = {
-  home: 'Splitjar: one QR, everyone gets paid',
-  new: 'Make a jar · Splitjar',
-  jar: 'Jar · Splitjar',
-  try: 'Play-money jar · Splitjar',
-  missing: 'Not found · Splitjar',
+  home: 'Allpaid: One QR. All paid.',
+  new: 'Make a jar · Allpaid',
+  jar: 'Jar · Allpaid',
+  try: 'Play-money jar · Allpaid',
+  missing: 'Not found · Allpaid',
 } as const;
 
 export function App() {

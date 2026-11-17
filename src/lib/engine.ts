@@ -18,7 +18,7 @@ import {
   makeContract,
   sandboxPay,
   type JarNode,
-  type SplitjarContract,
+  type AllpaidContract,
 } from './chain';
 import { lockingBytecodeOf, minPaymentFor, splitPot, type JarConfig } from './jar';
 import { binToHex } from '@bitauth/libauth';
@@ -42,7 +42,7 @@ export interface JarEvent {
   ms?: number;
   /** The split was broadcast by another device first. */
   byOther?: boolean;
-  /** For a refused cheat: the contract rule that caught it, and its line in Splitjar.cash. */
+  /** For a refused cheat: the contract rule that caught it, and its line in Allpaid.cash. */
   rule?: string;
   line?: string;
 }
@@ -50,6 +50,7 @@ export interface JarEvent {
 export type JarStatus = 'connecting' | 'watching' | 'offline';
 
 export interface JarSnapshot {
+  pollCount: number;
   status: JarStatus;
   statusMessage?: string;
   address: string;
@@ -68,7 +69,7 @@ export interface JarSnapshot {
 }
 
 interface LiveNode extends JarNode {
-  contract: SplitjarContract;
+  contract: AllpaidContract;
   min: bigint;
 }
 
@@ -86,6 +87,7 @@ export class JarEngine {
   private timer?: ReturnType<typeof setTimeout>;
   private stopped = false;
   private failures = 0;
+  private lifecycle = 0;
   readonly tree: JarNode[];
   readonly min: bigint;
   readonly pollMs: number;
@@ -93,11 +95,13 @@ export class JarEngine {
   constructor(
     readonly config: JarConfig,
     address: string,
+    readonly options: { observeOnly?: boolean } = {},
   ) {
     this.tree = jarTree(config);
     this.min = minPaymentFor(config.members);
     this.pollMs = config.net === 'sandbox' ? 250 : 1500;
     this.snapshot = {
+      pollCount: 0,
       status: 'connecting',
       address,
       events: [],
@@ -105,7 +109,7 @@ export class JarEngine {
       splitCount: 0,
       lastSplits: {},
       cheatArmed: false,
-      autoSplit: true,
+      autoSplit: !options.observeOnly,
       waiting: 0,
     };
   }
@@ -160,28 +164,34 @@ export class JarEngine {
   }
 
   async start() {
+    const lifecycle = ++this.lifecycle;
+    this.stopped = false;
     try {
       await this.connect();
+      if (this.stopped || lifecycle !== this.lifecycle) return;
       // Coins already in a jar when the page opens are split too (nobody else did it yet).
-      this.loop();
+      await this.loop();
     } catch (error) {
       this.set({ status: 'offline', statusMessage: errorText(error) });
-      if (!this.stopped) this.timer = setTimeout(() => this.start(), 5000);
+      if (!this.stopped && lifecycle === this.lifecycle) this.timer = setTimeout(() => this.start(), 5000);
     }
   }
 
   stop() {
+    this.lifecycle++;
     this.stopped = true;
     if (this.timer) clearTimeout(this.timer);
   }
 
   setAutoSplit(on: boolean) {
+    if (this.options.observeOnly) return;
     this.set({ autoSplit: on });
     if (on) this.tick();
   }
 
   /** The next payment into the root jar is first offered to a thief. The network has to refuse it. */
   armCheat() {
+    if (this.options.observeOnly) return;
     this.set({ cheatArmed: true });
   }
 
@@ -238,7 +248,7 @@ export class JarEngine {
       }
       this.failures = 0;
       if (this.snapshot.status !== 'watching') this.set({ status: 'watching', statusMessage: undefined });
-      this.set({ waiting });
+      this.set({ waiting, pollCount: this.snapshot.pollCount + 1 });
     } catch (error) {
       this.failures += 1;
       if (this.failures >= 3) this.set({ status: 'offline', statusMessage: errorText(error) });
@@ -249,7 +259,7 @@ export class JarEngine {
 
   /** Split one payment, then any nested jar it paid. Safe to call from many devices at once. */
   async split(node: LiveNode, utxo: SpendableUtxo) {
-    if (!this.provider || this.handled.has(key(utxo))) return;
+    if (this.options.observeOnly || !this.provider || this.handled.has(key(utxo))) return;
     const amounts = splitPot(
       utxo.satoshis,
       node.config.members.map((m) => m.bps),

@@ -6,7 +6,7 @@ export function WhyBch() {
   return (
     <section className="sec why">
       <div className="wrap two-col">
-        <h2 className="sec-title">Why this runs on Bitcoin Cash</h2>
+        <h2 className="sec-title">Small payments.<br /><span className="chrome-type">Built on Bitcoin Cash.</span></h2>
         <dl className="why-list">
           <div>
             <dt>The contract checks its own spending.</dt>

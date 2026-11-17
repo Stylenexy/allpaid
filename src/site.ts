@@ -4,7 +4,7 @@ export const SITE = {
   /** Short presentation based on the BLAZE "Widget Factory" template. */
   slidesUrl: '',
   /** Source code. */
-  repoUrl: 'https://github.com/Stylenexy/splitjar',
+  repoUrl: 'https://github.com/Stylenexy/allpaid',
   /** CashTokens-aware address (bitcoincash:z…) that receives EMBER2026 community votes. */
   emberAddress: '',
   /** The demo jar on mainnet, as a /jar#… link, once its member addresses are set. */

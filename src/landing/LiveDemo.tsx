@@ -1,6 +1,6 @@
 // The play-money jar that runs on the landing page. One engine is shared by the
 // hero tree and the cheat scene, so what you do in one shows up in the other.
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useJar } from '../hooks/useJar';
 import { SAMPLE_BAND, SAMPLE_ROLES } from '../lib/sample';
 import { SplitTree } from '../components/SplitTree';
@@ -9,6 +9,7 @@ import { bch } from '../lib/format';
 import { SPLIT_FEE } from '../lib/jar';
 import { onLinkClick } from '../router';
 import type { JarEngine } from '../lib/engine';
+import { PaymentRoutes } from './PaymentRoutes';
 
 const DROP = 100_000n;
 
@@ -18,21 +19,12 @@ const waiters = new Set<() => void>();
 
 export default function HeroDemo() {
   const { engine, snap } = useJar(SAMPLE_BAND);
-  const auto = useRef(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     sharedEngine = engine;
     waiters.forEach((w) => w());
   }, [engine]);
-
-  // The story plays once by itself, so the first look already shows a split.
-  useEffect(() => {
-    if (snap.status !== 'watching' || auto.current) return;
-    auto.current = true;
-    const t = setTimeout(() => engine.simulatePayment(DROP), 800);
-    return () => clearTimeout(t);
-  }, [snap.status, engine]);
 
   useEffect(() => {
     if (!busy) return;
@@ -42,7 +34,8 @@ export default function HeroDemo() {
 
   return (
     <div className="demo-card">
-      <SplitTree config={SAMPLE_BAND} snap={snap} roles={SAMPLE_ROLES} />
+      <PaymentRoutes snap={snap} />
+      <div className="demo-ledger"><SplitTree config={SAMPLE_BAND} snap={snap} roles={SAMPLE_ROLES} /></div>
       <div className="demo-foot">
         <button
           type="button"
@@ -53,7 +46,7 @@ export default function HeroDemo() {
             engine.simulatePayment(DROP);
           }}
         >
-          Pay {bch(DROP)} BCH into the jar
+          Simulate {bch(DROP)} BCH
         </button>
         <a href="/try" onClick={onLinkClick} className="demo-more">
           Open the full play-money jar

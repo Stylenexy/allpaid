@@ -1,12 +1,12 @@
 pragma cashscript ^0.14.0;
 
-// Splitjar: a Bitcoin Cash address that pays a whole team of 2 to 4 members.
+// Allpaid: a Bitcoin Cash address that pays a whole team of 2 to 4 members.
 //
 // Every coin paid to this contract can leave in exactly one way: split between
 // the members, in the shares fixed when the jar was made. There is no owner key.
 // Anyone may trigger the split (the network fee comes out of the jar), and
 // nobody, including the person who triggers it, can change where the money goes.
-contract Splitjar(
+contract Allpaid(
     // Locking bytecode of each member, in payout order. Unused slots are 0x.
     bytes lock0,
     bytes lock1,

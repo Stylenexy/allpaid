@@ -69,10 +69,10 @@ export function Refusal({ event, sandbox, after }: { event: JarEvent; sandbox: b
     <div className="refusal" role="status">
       <p className="refusal-mark">Refused</p>
       <p className="refusal-who">{sandbox ? 'The Bitcoin Cash VM (libauth, same rules as a node) said:' : 'The node said:'}</p>
-      <p className="refusal-msg mono">{event.message}</p>
+      <p className="refusal-msg">{event.message}</p>
       {event.rule && (
         <p className="refusal-rule">
-          The rule that caught it{event.line ? `, Splitjar.cash line ${event.line}` : ''}: <strong>{event.rule}</strong>
+          The rule that caught it{event.line ? `, Allpaid.cash line ${event.line}` : ''}: <strong>{event.rule}</strong>
         </p>
       )}
       {after && <p className="refusal-after">{after}</p>}

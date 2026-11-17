@@ -13,13 +13,12 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: radial-gradient(ellipse at 50% 300px, var(--stage), transparent 900px), var(--bg);
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--step-0);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
 img,
@@ -32,7 +31,7 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
-  font-weight: 760;
+  font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.06;
   margin: 0;
@@ -42,6 +41,9 @@ h3 {
 p {
   margin: 0;
   text-wrap: pretty;
+  text-align: justify;
+  text-align-last: left;
+  hyphens: auto;
 }
 
 a {
@@ -157,7 +159,7 @@ select {
 }
 
 .btn-small {
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 var(--s-3);
   font-size: var(--step--1);
 }
@@ -215,6 +217,7 @@ select {
 }
 
 @media (max-width: 480px) {
+  p { text-align: left; }
   .btn {
     white-space: normal;
     text-align: center;

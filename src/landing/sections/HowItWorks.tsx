@@ -6,7 +6,7 @@ export function HowItWorks() {
   return (
     <section className="sec how" id="how">
       <div className="wrap">
-        <h2 className="sec-title">How a payment becomes everyone's</h2>
+        <h2 className="sec-title">One payment.<br /><span className="chrome-type">Every agreed share.</span></h2>
         <ol className="steps">
           <li>
             <p className="step-name">Someone scans the QR and pays</p>

@@ -173,7 +173,7 @@ export function validateJar(config: JarConfig): Problem[] {
   return [...problems, ...validateMembers(config.members, config.net, '', 0)];
 }
 
-/** Constructor arguments for Splitjar.cash, in contract order. Nested members must be resolved first. */
+/** Constructor arguments for Allpaid.cash, in contract order. Nested members must be resolved first. */
 export function contractArgs(config: JarConfig): [Uint8Array, Uint8Array, Uint8Array, Uint8Array, bigint, bigint, bigint, bigint, bigint] {
   const locks = config.members.map((m) => {
     const lock = lockingBytecodeOf(m.address);

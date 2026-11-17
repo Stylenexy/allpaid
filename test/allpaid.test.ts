@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { MockNetworkProvider, TransactionBuilder, randomUtxo, type SpendableUtxo } from 'cashscript';
 import 'cashscript/dist/test/VitestExtensions.js';
-import { buildCheat, buildDistribute, buildMerge, explainCheat, jarTree, makeContract, outputsOf, type SplitjarContract } from '../src/lib/chain';
+import { buildCheat, buildDistribute, buildMerge, explainCheat, jarTree, makeContract, outputsOf, type AllpaidContract } from '../src/lib/chain';
 import { splitPot, minPayment, SPLIT_FEE, type JarConfig, lockingBytecodeOf } from '../src/lib/jar';
 import { sampleAddress } from '../src/lib/sample';
 import { binToHex } from '@bitauth/libauth';
@@ -19,7 +19,7 @@ beforeEach(() => {
   provider = new MockNetworkProvider();
 });
 
-function fund(contract: SplitjarContract, satoshis: bigint): SpendableUtxo {
+function fund(contract: AllpaidContract, satoshis: bigint): SpendableUtxo {
   return provider.addUtxo(contract.address, randomUtxo({ satoshis }));
 }
 

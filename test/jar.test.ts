@@ -103,7 +103,7 @@ describe('nested jars', () => {
 
   it('reads a jar link pasted as a member', () => {
     const code = encodeJar(band);
-    expect(jarCodeFromLink(`https://splitjar.example/jar#${code}`)).toBe(code);
+    expect(jarCodeFromLink(`https://allpaid.example/jar#${code}`)).toBe(code);
     expect(jarCodeFromLink('bitcoincash:qq123')).toBeNull();
   });
 });

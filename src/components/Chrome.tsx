@@ -49,7 +49,7 @@ export function Nav({ current }: { current?: 'home' | 'new' | 'try' | 'jar' }) {
   return (
     <header className="nav">
       <div className="nav-in wrap">
-        <a href="/" onClick={onLinkClick} className="nav-home" aria-label="Splitjar home">
+        <a href="/" onClick={onLinkClick} className="nav-home" aria-label="Allpaid home">
           <Logo />
         </a>
         <nav className="nav-links" aria-label="Main">
@@ -74,7 +74,7 @@ export function Footer() {
       <div className="wrap footer-in">
         <div className="footer-cols">
           <p className="footer-line">
-            Splitjar is open source (MIT). The contract has no owner key and has not been audited: use small amounts.
+            Allpaid is open source (MIT). The contract has no owner key and has not been audited: use small amounts.
           </p>
           <nav className="footer-links" aria-label="Footer">
             <a href="/new" onClick={onLinkClick}>
@@ -92,7 +92,7 @@ export function Footer() {
           </nav>
         </div>
         <p className="footer-word" aria-hidden="true">
-          splitjar
+          Allpaid
         </p>
       </div>
     </footer>

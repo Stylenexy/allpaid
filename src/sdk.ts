@@ -1,4 +1,4 @@
-// Splitjar SDK: everything a wallet, a point-of-sale app or a bot needs to work
+// Allpaid SDK: everything a wallet, a point-of-sale app or a bot needs to work
 // with jars, without the web page. Same code the site and the keeper run.
 //
 //   import { decodeJar, jarAddress, JarEngine } from './sdk';

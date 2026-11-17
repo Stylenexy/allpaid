@@ -5,7 +5,7 @@ import { encodeCashAddress, hash160, utf8ToBin } from '@bitauth/libauth';
 import type { JarConfig, Member } from './jar';
 
 export function sampleAddress(word: string, prefix: 'bitcoincash' | 'bchtest' = 'bchtest'): string {
-  return encodeCashAddress({ prefix, type: 'p2pkh', payload: hash160(utf8ToBin(`splitjar sample ${word}`)) }).address;
+  return encodeCashAddress({ prefix, type: 'p2pkh', payload: hash160(utf8ToBin(`allpaid sample ${word}`)) }).address;
 }
 
 const wallet = (name: string, bps: number): Member => ({ name, bps, address: sampleAddress(name.toLowerCase()) });

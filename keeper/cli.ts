@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// splitjar-keeper: sends the split for payments waiting in one or more jars,
+// allpaid-keeper: sends the split for payments waiting in one or more jars,
 // so members get paid even when nobody has the jar page open.
 //
 // It holds no keys and needs none: a split is a covenant spend whose fee comes
 // out of the payment, and it can only pay the members, in their shares.
 //
-//   splitjar-keeper <jar link or code>...          one round, then exit
-//   splitjar-keeper --file keeper/jars.txt          jars listed one per line (# comments)
-//   splitjar-keeper --watch [--every 30] <jar>...   keep going, a round every 30 s
+//   allpaid-keeper <jar link or code>...          one round, then exit
+//   allpaid-keeper --file keeper/jars.txt          jars listed one per line (# comments)
+//   allpaid-keeper --watch [--every 30] <jar>...   keep going, a round every 30 s
 import { readFileSync } from 'node:fs';
 import { JarEngine } from '../src/lib/engine';
 import { jarAddress, explorerTx } from '../src/lib/chain';
@@ -22,11 +22,11 @@ const option = (name: string) => {
 };
 
 if (flag('--help') || flag('-h') || args.length === 0) {
-  console.log(`splitjar-keeper: split payments waiting in Splitjar jars.
+  console.log(`allpaid-keeper: split payments waiting in Allpaid jars.
 
-  splitjar-keeper <jar link or code>...
-  splitjar-keeper --file jars.txt
-  splitjar-keeper --watch [--every 30] <jar link or code>...`);
+  allpaid-keeper <jar link or code>...
+  allpaid-keeper --file jars.txt
+  allpaid-keeper --watch [--every 30] <jar link or code>...`);
   process.exit(args.length === 0 ? 1 : 0);
 }
 
