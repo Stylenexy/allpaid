@@ -44,7 +44,7 @@ Built for **BCH BLAZE 2026, Mainnet Track**, November 2026. The contract has not
 | **Innovation** | An address that is a whole team. Nested jars make a revenue waterfall out of plain payments: a festival pays a band, the band pays its crew, all from one scan. The page invites you to attack it two ways and shows the network refusing each at a different contract line. |
 | **Design and usability** | The payer only scans and pays. The team sets up in one form, no account; nesting is pasting another jar's link as a member. The split tree lights up level by level with the amount and a link per transaction. Tested at 360 px. |
 | **Technical strength** | Covenant with native introspection: output count, recipients, exact amounts and token fields are all fixed by the contract; no owner key, no signature. Nested jars need no contract change: a jar's address is a P2SH32 locking bytecode like any other recipient. Splits are deterministic, so any device (or the keeper) can send them and all send the same transaction. 61 tests, all transactions checked by the BCH VM. |
-| **Business potential** | Free for teams. Event templates can include Allpaid as a visible, opt-in 0.5% member written into the address; a hosted keeper with payout alerts is the paid plan for venues. Why one address instead of a multi-output payment: any wallet or exchange can pay it, and the cut is checkable in the address itself. See [Business model](#business-model). |
+| **Business potential** | Free for teams; a split costs the team about $0.002. Paid plan: a hosted keeper with payout alerts at $9 per venue per month, against $50 or more for tip-pooling software. Event templates can include Allpaid as a visible, opt-in 0.5% member written into the address. Why one address instead of a multi-output payment: any wallet or exchange can pay it, and the cut is checkable in the address itself. See [Business model](#business-model). |
 
 ## How it works
 
@@ -146,10 +146,16 @@ The SDK entry point [`src/sdk.ts`](src/sdk.ts) exports what the site and the kee
 
 ## Business model
 
+Numbers below use BCH at **$209.07** (CoinGecko, 17 Nov 2026 05:40 UTC).
+
+- **What a split costs the team.** One split pays a fixed 1,000-sat fee: about **$0.002**, whatever the payment size. Paying into the jar is an ordinary BCH payment (a few hundred sats). A nested level adds one more 1,000-sat fee.
 - **Free for teams.** Making a jar and paying into it stays free. The contract has no owner key and takes no cut.
-- **Revenue.** Event templates include Allpaid as a visible, opt-in 0.5% member: it is written into the address, so every member sees it before anyone agrees. A hosted keeper with payout alerts for venues is the paid plan.
+- **Paid plan: hosted keeper for venues, planned at $9 per venue per month.** It sends every split within seconds even when nobody has a jar page open, and alerts each member when they are paid. For comparison, restaurant tip-pooling software charges per location per month: 7shifts Tip Management about $49.99 plus $1 per payout ([noon.ai, 2026](https://www.noon.ai/blog/articles/452-7shifts-pricing-2026)), SpotOn Teamwork $3 per employee with a $75 minimum ([spoton.com](https://spoton.com/solutions/tip-management/)). Those tools still need payroll to move the money; a jar pays out on chain at once.
+- **Event templates.** A festival or venue template can include Allpaid as a visible, opt-in 0.5% member: it is written into the address, so every member sees it before anyone agrees.
 - **Why one address and not a multi-output payment.** Any wallet or exchange can pay one address, while an exchange withdrawal, for one, goes to a single address. And the cut is checkable in the address itself: it is computed from the members and shares, so nobody can change it after the QR is printed.
-- **First users.** Teams already paid in BCH: multi-host podcasts, tip pools at venues that take BCH, team-run campaigns. One line of HTML puts their jar on their page.
+- **Market.** In the US alone, about $26 billion a year in tips go to workers who can be in a tip pool ([EPI](https://www.epi.org/?p=139138), 2016 data). On Bitcoin Cash, 134 Flipstarter campaigns raised 15,545 BCH for teams ([Flipstarter index](https://half_engineer.codeberg.page/)): money that today lands in one wallet or a multisig and is split by hand.
+- **First teams we are asking** (none has agreed yet): [The Bitcoin Cash Podcast](https://bitcoincashpodcast.com/) (two hosts and sponsors, one BCH address on the page today); [Bitcoin Cash Node](https://bitcoincashnode.org/) (donations to a 3-of-5 multisig held by team members, which a jar could pay out without a signing round); BCH-accepting venues in the Paytaca merchant network in the Visayas, about 80 merchants in 2024 ([BitPinas](https://bitpinas.com/feature/paytaca-expansion-interview/)), where staff tip pools fit a jar.
+- **What prize money would fund.** A third-party review of the contract, the hosted keeper's first year of hosting, an Indonesian interface, and onboarding the first ten venues in person.
 
 ## Roadmap
 
@@ -164,7 +170,6 @@ These wait for the author and are not done yet:
 - **Mainnet demo jar.** Member addresses for a public demo jar, then its link in `SITE.demoJarPath` ([`site.ts`](src/site.ts)) so the home page shows a real payment QR.
 - **WizardConnect pairing** tested with Selene, Paytaca and Cashonize.
 - **Slides** (BLAZE Widget Factory template) and the **demo video**: links in the header above and in `SITE.slidesUrl`.
-- **EMBER2026 address** in `SITE.emberAddress`, shown in the banner.
 - **Public repository.** The source link in the banner points to this repository, which is private until submission.
 
 ## Run it locally

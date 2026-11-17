@@ -16,9 +16,9 @@ export function Cta() {
           </a>
         </div>
         <ul className="cta-plan" aria-label="How Allpaid is paid for">
-          <li>Free for teams</li>
+          <li>Free for teams: a split costs the team about $0.002</li>
+          <li>Hosted keeper with payout alerts: $9 per venue per month, where tip-pooling software charges $50 or more</li>
           <li>Event templates can include Allpaid as a visible, opt-in 0.5% member written into the address</li>
-          <li>Hosted keeper with payout alerts for venues</li>
         </ul>
         <p className="cta-why">
           <strong>Why not a multi-output payment?</strong> Any wallet or exchange can pay one address, and the cut is checkable in the address itself.
