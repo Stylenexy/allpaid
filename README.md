@@ -8,7 +8,7 @@
 
 One QR. Everyone gets paid.
 
-[![ci](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml/badge.svg)](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml) ![tests](https://img.shields.io/badge/tests-61%20passing-2ea44f) ![license](https://img.shields.io/badge/license-MIT-blue) ![owner keys](https://img.shields.io/badge/owner%20keys-0-2ea44f) [![Pay this team on BCH](public/badge.svg)](#embed-and-badge)
+[![ci](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml/badge.svg)](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml) ![tests](https://img.shields.io/badge/tests-76%20passing-2ea44f) ![license](https://img.shields.io/badge/license-MIT-blue) ![owner keys](https://img.shields.io/badge/owner%20keys-0-2ea44f) [![Pay this team on BCH](public/badge.svg)](#embed-and-badge)
 
 **[Live app](https://allpaid.vercel.app)** · **[Try it, no wallet](https://allpaid.vercel.app/try)** · **[Make a jar](https://allpaid.vercel.app/new)**
 
@@ -18,7 +18,7 @@ Allpaid turns one Bitcoin Cash QR into a whole team: pay once, and a CashScript 
 
 Built for **BCH BLAZE 2026, Mainnet Track**, November 2026. The contract has not been audited: use small amounts.
 
-<img src="docs/shots/try-split-1440.png" width="100%" alt="The try page after one play-money payment: seven wallets over two levels lit green, and below them the Bitcoin Cash VM refusing the thief's transaction">
+<img src="docs/shots/try-demo.gif" width="100%" alt="20-second recording of the try page: one play-money payment lights seven wallets over two levels, then the thief's transaction is refused by the Bitcoin Cash VM at contract line 32">
 
 ## Try it in 60 seconds
 
@@ -43,7 +43,7 @@ Built for **BCH BLAZE 2026, Mainnet Track**, November 2026. The contract has not
 |---|---|
 | **Innovation** | An address that is a whole team. Nested jars make a revenue waterfall out of plain payments: a festival pays a band, the band pays its crew, all from one scan. The page invites you to attack it two ways and shows the network refusing each at a different contract line. |
 | **Design and usability** | The payer only scans and pays. The team sets up in one form, no account; nesting is pasting another jar's link as a member. The split tree lights up level by level with the amount and a link per transaction. Tested at 360 px. |
-| **Technical strength** | Covenant with native introspection: output count, recipients, exact amounts and token fields are all fixed by the contract; no owner key, no signature. Nested jars need no contract change: a jar's address is a P2SH32 locking bytecode like any other recipient. Splits are deterministic, so any device (or the keeper) can send them and all send the same transaction. 61 tests, all transactions checked by the BCH VM. |
+| **Technical strength** | Covenant with native introspection: output count, recipients, exact amounts and token fields are all fixed by the contract; no owner key, no signature. Nested jars need no contract change: a jar's address is a P2SH32 locking bytecode like any other recipient. Splits are deterministic, so any device (or the keeper) can send them and all send the same transaction. 76 tests, all transactions checked by the BCH VM. |
 | **Business potential** | Free for teams; a split costs the team about $0.002. Paid plan: a hosted keeper with payout alerts at $9 per venue per month, against $50 or more for tip-pooling software. Event templates can include Allpaid as a visible, opt-in 0.5% member written into the address. Why one address instead of a multi-output payment: any wallet or exchange can pay it, and the cut is checkable in the address itself. See [Business model](#business-model). |
 
 ## How it works
@@ -84,7 +84,7 @@ Measured split sizes: 441 bytes for 2 members, 502 for 3, 561 for 4, so the fixe
 
 ```bash
 npm ci
-npm test        # compiles the contract, then 61 tests
+npm test        # compiles the contract, then 76 tests
 npm run build   # type-check and production build
 ```
 
