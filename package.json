@@ -16,7 +16,8 @@
     "test": "npm run compile && vitest run",
     "typecheck": "tsc -b",
     "build:keeper": "npm run compile && vite build --ssr keeper/cli.ts --outDir dist-keeper --emptyOutDir",
-    "keeper": "npm run build:keeper && node dist-keeper/cli.js"
+    "keeper": "npm run build:keeper && node dist-keeper/cli.js",
+    "chipnet": "npm run compile && vite build --ssr scripts/chipnet-proof.ts --outDir dist-chipnet --emptyOutDir && node dist-chipnet/chipnet-proof.js"
   },
   "dependencies": {
     "@bitauth/libauth": "3.1.0-next.8",
