@@ -1,7 +1,8 @@
 // Pieces of the jar page: the activity feed and the cheat scene.
+import { useState } from 'react';
 import type { JarConfig } from '../lib/jar';
 import type { JarEngine, JarEvent, JarSnapshot } from '../lib/engine';
-import { explorerTx, jarTree } from '../lib/chain';
+import { explorerTx, jarTree, type CheatKind } from '../lib/chain';
 import { bch, sats, shortHash } from '../lib/format';
 
 const LABEL: Record<JarEvent['kind'], string> = {
@@ -63,6 +64,31 @@ export function Activity({ config, snap }: { config: JarConfig; snap: JarSnapsho
   );
 }
 
+/** The two cheats the thief can try, in the words the page uses. */
+export const CHEATS: Record<CheatKind, { label: string; text: (first: string) => string }> = {
+  all: {
+    label: 'Everything to one member',
+    text: (first) => `One output: the whole payment to ${first}, nothing for the others.`,
+  },
+  swap: {
+    label: "Swap two members' amounts",
+    text: () => 'Every member is paid and the total adds up, but two members trade amounts.',
+  },
+};
+
+/** Pick which cheat the thief tries. */
+export function CheatChoice({ kind, onChange, disabled }: { kind: CheatKind; onChange: (kind: CheatKind) => void; disabled?: boolean }) {
+  return (
+    <div className="seg cheat-choice" role="radiogroup" aria-label="Which cheat">
+      {(Object.keys(CHEATS) as CheatKind[]).map((k) => (
+        <button key={k} type="button" role="radio" aria-checked={kind === k} disabled={disabled} className={`seg-btn ${kind === k ? 'is-on' : ''}`} onClick={() => onChange(k)}>
+          {CHEATS[k].label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** The refusal, as the network or the VM reported it, plus the contract rule that caught it. */
 export function Refusal({ event, sandbox, after }: { event: JarEvent; sandbox: boolean; after?: string }) {
   return (
@@ -75,6 +101,13 @@ export function Refusal({ event, sandbox, after }: { event: JarEvent; sandbox: b
           The rule that caught it{event.line ? `, Allpaid.cash line ${event.line}` : ''}: <strong>{event.rule}</strong>
         </p>
       )}
+      {event.code && (
+        <pre className="refusal-code" aria-label={`Allpaid.cash line ${event.line ?? ''}`}>
+          <span className="refusal-ln" aria-hidden="true">{event.line}</span>
+          {/* The require's message on its own line, so the code wraps where a person would wrap it. */}
+          <code>{event.code.replace(/, "/, ',\n    "')}</code>
+        </pre>
+      )}
       {after && <p className="refusal-after">{after}</p>}
     </div>
   );
@@ -84,8 +117,12 @@ export function CheatPanel({ config, snap, engine }: { config: JarConfig; snap: 
   const lastCheat = snap.events.find((e) => e.kind === 'cheat');
   const sandbox = config.net === 'sandbox';
   const first = config.members[0]?.name ?? 'member 1';
+  // Swapping needs two members with different shares; with equal shares only the first cheat is offered.
+  const canSwap = config.members.some((m) => m.bps !== config.members[0].bps);
+  const [kind, setKind] = useState<CheatKind>('all');
+  const chosen = canSwap ? kind : 'all';
   const run = () => {
-    engine.armCheat();
+    engine.armCheat(chosen);
     if (sandbox) engine.simulatePayment(100_000n);
   };
   return (
@@ -94,9 +131,10 @@ export function CheatPanel({ config, snap, engine }: { config: JarConfig; snap: 
         Try to cheat
       </h2>
       <p className="cheat-text">
-        The thief gets the first shot at the next payment: a transaction that spends the jar's coin and sends all of it to {first}. It is
+        The thief gets the first shot at the next payment: a transaction that spends the jar's coin and breaks the agreement. {CHEATS[chosen].text(first)} It is
         broadcast to the {sandbox ? 'in-browser Bitcoin Cash VM' : 'network'} as is, with no check on our side. Then the honest split runs.
       </p>
+      {canSwap && <CheatChoice kind={chosen} onChange={setKind} disabled={snap.cheatArmed} />}
       <div className="cheat-row">
         {snap.cheatArmed ? (
           <>

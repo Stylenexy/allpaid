@@ -141,24 +141,62 @@ export function buildMerge(contract: AllpaidContract, a: SpendableUtxo, b: Spend
 }
 
 /**
- * The cheat: same coin, same unlock, but the whole pot goes to member 1
- * (the one who would have held the tin). The network must refuse it.
+ * Two ways to cheat, each caught by a different rule of the contract:
+ * - `all`: the whole pot goes to member 1 (the one who would have held the tin).
+ *   One output instead of one per member: caught by the output count (line 32).
+ * - `swap`: every member is paid, the outputs and their total are right, but two
+ *   members' amounts are swapped. Caught by the amount check of output 0 (line 39).
  */
-export function buildCheat(contract: AllpaidContract, config: JarConfig, utxo: SpendableUtxo): BuiltTx {
+export type CheatKind = 'all' | 'swap';
+
+/**
+ * The two members whose amounts the swap cheat exchanges: member 1 and the first
+ * member paid a different amount. Null when every member gets the same amount,
+ * because swapping equal amounts would just be the honest split.
+ */
+export function swapPair(amounts: readonly bigint[]): [number, number] | null {
+  const j = amounts.findIndex((a) => a !== amounts[0]);
+  return j > 0 ? [0, j] : null;
+}
+
+/** The outputs of a cheat, or null when this payment cannot be cheated that way. */
+export function cheatOutputs(config: JarConfig, utxo: SpendableUtxo, kind: CheatKind = 'all'): { to: string; amount: bigint }[] | null {
+  const members = resolveJar(config).members;
+  if (kind === 'all') return [{ to: members[0].address, amount: utxo.satoshis - SPLIT_FEE }];
+  const amounts = splitPot(utxo.satoshis, members.map((m) => m.bps), SPLIT_FEE);
+  const pair = swapPair(amounts);
+  if (!pair) return null;
+  const [i, j] = pair;
+  const swapped = [...amounts];
+  [swapped[i], swapped[j]] = [amounts[j], amounts[i]];
+  return members.map((m, k) => ({ to: m.address, amount: swapped[k] }));
+}
+
+function cheatBuilder(contract: AllpaidContract, config: JarConfig, utxo: SpendableUtxo, kind: CheatKind): TransactionBuilder {
+  const outputs = cheatOutputs(config, utxo, kind);
+  if (!outputs) throw new Error('Every member gets the same amount from this payment, so swapping two of them changes nothing.');
   const builder = new TransactionBuilder({ provider: contract.provider });
   builder.addInput(utxo, contract.unlock.distribute());
-  builder.addOutput({ to: resolveJar(config).members[0].address, amount: utxo.satoshis - SPLIT_FEE });
-  return finish(builder.build());
+  outputs.forEach((o) => builder.addOutput(o));
+  return builder;
+}
+
+/** The cheat: same coin, same unlock, outputs that break the agreement. The network must refuse it. */
+export function buildCheat(contract: AllpaidContract, config: JarConfig, utxo: SpendableUtxo, kind: CheatKind = 'all'): BuiltTx {
+  return finish(cheatBuilder(contract, config, utxo, kind).build());
 }
 
 /**
  * After the network refuses the cheat, find which contract line refused it,
  * by replaying the same transaction in CashScript's debugger.
  */
-export function explainCheat(contract: AllpaidContract, config: JarConfig, utxo: SpendableUtxo): { rule: string; line?: string } | null {
-  const builder = new TransactionBuilder({ provider: contract.provider });
-  builder.addInput(utxo, contract.unlock.distribute());
-  builder.addOutput({ to: resolveJar(config).members[0].address, amount: utxo.satoshis - SPLIT_FEE });
+export function explainCheat(
+  contract: AllpaidContract,
+  config: JarConfig,
+  utxo: SpendableUtxo,
+  kind: CheatKind = 'all',
+): { rule: string; line?: string; code?: string } | null {
+  const builder = cheatBuilder(contract, config, utxo, kind);
   try {
     builder.debug();
     return null;
@@ -166,8 +204,15 @@ export function explainCheat(contract: AllpaidContract, config: JarConfig, utxo:
     const text = errorText(error);
     const rule = /following message: (.*?)\.?\s*(\n|$)/.exec(text)?.[1];
     const line = /line (\d+)/.exec(text)?.[1];
-    return rule ? { rule, line } : { rule: text.split('\n')[0] };
+    return rule ? { rule, line, code: contractLine(line) } : { rule: text.split('\n')[0] };
   }
+}
+
+/** One line of Allpaid.cash, trimmed, as compiled into the artifact the app runs. */
+export function contractLine(line?: string | number): string | undefined {
+  const n = Number(line);
+  if (!Number.isInteger(n) || n < 1) return undefined;
+  return artifact.source.split(/\r?\n/)[n - 1]?.trim() || undefined;
 }
 
 /** Broadcast without any local check, so a refusal comes from the network itself. */

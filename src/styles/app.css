@@ -967,3 +967,9 @@ fieldset.field legend {
 @media(max-width:900px) { .jar-grid { grid-template-columns:minmax(0,1fr); } .jar-live .pay,.jar-sandbox .pay { position:static; } }
 @media(max-width:720px) { .agreement-intro svg { width:70px; height:70px; } .create .page-title { font-size:var(--step-4); } .allocation-strip>div { padding:var(--s-3) var(--s-2); } .allocation-strip strong { font-size:var(--step-1); } }
 @media(max-width:480px) { .nav-link { display:none; } .pay,.cheat { padding:var(--s-4); } .jar-head-actions { flex-wrap:wrap; } .jar-name { font-size:var(--step-4); } .row { gap:var(--s-2); } }
+.refusal-code { margin:0; display:flex; gap:var(--s-3); padding:var(--s-2) var(--s-3); border-left:2px solid var(--refused); background:var(--surface-1); font-family:var(--font-mono); font-size:.78rem; line-height:1.5; white-space:pre-wrap; overflow-wrap:break-word; }
+.refusal-ln { color:var(--text-faint); flex:none; }
+.refusal-code code { font:inherit; color:var(--text); min-width:0; }
+@media(max-width:480px) { .refusal-code { white-space:pre; overflow-x:auto; overflow-wrap:normal; } }
+.cheat-choice { max-width:100%; justify-self:start; }
+.cheat-choice .seg-btn:disabled { cursor:default; opacity:.6; }

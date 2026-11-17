@@ -4,9 +4,10 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useJar } from '../hooks/useJar';
 import { SAMPLE_BAND, SAMPLE_ROLES } from '../lib/sample';
 import { SplitTree } from '../components/SplitTree';
-import { Refusal } from '../components/JarParts';
+import { CheatChoice, Refusal } from '../components/JarParts';
 import { bch } from '../lib/format';
-import { SPLIT_FEE } from '../lib/jar';
+import { SPLIT_FEE, splitPot } from '../lib/jar';
+import { swapPair, type CheatKind } from '../lib/chain';
 import { onLinkClick } from '../router';
 import type { JarEngine } from '../lib/engine';
 import { PaymentRoutes } from './PaymentRoutes';
@@ -80,13 +81,21 @@ export function CheatDemo() {
   return <CheatInner engine={engine} />;
 }
 
+const BAND = SAMPLE_BAND.members;
+const HONEST = splitPot(DROP, BAND.map((m) => m.bps));
+// The sample band pays Vocals 30% and Drums 25%, so there is always a pair to swap.
+const [SWAP_A, SWAP_B] = swapPair(HONEST) ?? [0, 1];
+
+const possessive = (name: string) => (name.endsWith('s') ? `${name}'` : `${name}'s`);
+
 function CheatInner({ engine }: { engine: JarEngine }) {
   const snap = useSyncExternalStore(engine.subscribe, engine.getSnapshot);
   const { refusal: lastCheat, honest } = cheatResult(snap.events);
-  const [first, ...others] = SAMPLE_BAND.members;
+  const [kind, setKind] = useState<CheatKind>('all');
+  const [first, ...others] = BAND;
   return (
     <div className="demo-card">
-      <svg key={lastCheat?.id ?? 'ready'} className={`cheat-world ${lastCheat ? 'is-refused' : ''} ${honest ? 'is-honest' : ''}`} viewBox="0 0 360 170" role="img" aria-label={lastCheat ? `The slot is locked. The thief's route is broken.${honest ? ' The honest split was accepted by the VM.' : ' Waiting for the honest split.'}` : 'The jar holds the agreed routes. Try sending a transaction that breaks the agreement.'}>
+      <svg key={`world-${lastCheat?.id ?? 'ready'}`} className={`cheat-world ${lastCheat ? 'is-refused' : ''} ${honest ? 'is-honest' : ''}`} viewBox="0 0 360 170" role="img" aria-label={lastCheat ? `The slot is locked. The thief's route is broken.${honest ? ' The honest split was accepted by the VM.' : ' Waiting for the honest split.'}` : 'The jar holds the agreed routes. Try sending a transaction that breaks the agreement.'}>
         <path className="cheat-thief-route" pathLength="1" d="M180 74v30q0 12 70 12h72" />
         <path className="cheat-honest-route" pathLength="1" d="M180 74v40q0 16-95 16H34m146-56v82m0-82v40q0 16 85 16h61" />
         <g className="cheat-vessel" transform="translate(142 0)"><TinMark size={76} /></g>
@@ -94,37 +103,55 @@ function CheatInner({ engine }: { engine: JarEngine }) {
         <path className="cheat-lock" d="M171 55v-8a9 9 0 0 1 18 0v8m-20 0h22v18h-22Z" />
         <text className="cheat-route-label" x="320" y="102" textAnchor="end">Thief</text>
       </svg>
+      <CheatChoice kind={kind} onChange={setKind} disabled={snap.cheatArmed} />
       <div className="thief-tx" aria-label="The thief's transaction">
         <p className="thief-row">
           <span>In</span>
           <span className="num">{bch(DROP)} BCH from the jar</span>
         </p>
-        <p className="thief-row thief-out">
-          <span>Out</span>
-          <span className="num">
-            {bch(DROP - SPLIT_FEE)} BCH, all to {first.name}
-          </span>
-        </p>
-        {others.map((m) => (
-          <p className="thief-row thief-missing" key={m.name}>
-            <span>Out</span>
-            <span>nothing for {m.name}</span>
-          </p>
-        ))}
+        {kind === 'all' ? (
+          <>
+            <p className="thief-row thief-out">
+              <span>Out</span>
+              <span className="num">
+                {bch(DROP - SPLIT_FEE)} BCH, all to {first.name}
+              </span>
+            </p>
+            {others.map((m) => (
+              <p className="thief-row thief-missing" key={m.name}>
+                <span>Out</span>
+                <span>nothing for {m.name}</span>
+              </p>
+            ))}
+          </>
+        ) : (
+          BAND.map((m, i) => {
+            const from = i === SWAP_A ? SWAP_B : i === SWAP_B ? SWAP_A : i;
+            return (
+              <p className={`thief-row ${from !== i ? 'thief-out' : ''}`} key={m.name}>
+                <span>Out</span>
+                <span className="num">
+                  {bch(HONEST[from])} BCH to {m.name}
+                  {from !== i && `, ${possessive(BAND[from].name)} amount`}
+                </span>
+              </p>
+            );
+          })
+        )}
       </div>
       <button
         type="button"
         className="btn"
         disabled={snap.status !== 'watching' || snap.cheatArmed}
         onClick={() => {
-          engine.armCheat();
+          engine.armCheat(kind);
           engine.simulatePayment(DROP);
         }}
       >
         Send the thief's transaction
       </button>
       {lastCheat ? (
-        <Refusal event={lastCheat} sandbox key={lastCheat.id} after={honest ? 'Then the honest split went through: the tree above paid all seven wallets.' : 'The thief was refused. Waiting for the honest split.'} />
+        <Refusal event={lastCheat} sandbox key={`refusal-${lastCheat.id}`} after={honest ? 'Then the honest split went through: the tree above paid all seven wallets.' : 'The thief was refused. Waiting for the honest split.'} />
       ) : (
         <p className="demo-note">Nothing is checked on our side first. The transaction goes straight to the VM, the same rules a node runs.</p>
       )}

@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { MockNetworkProvider, TransactionBuilder, randomUtxo, type SpendableUtxo } from 'cashscript';
 import 'cashscript/dist/test/VitestExtensions.js';
-import { buildCheat, buildDistribute, buildMerge, explainCheat, jarTree, makeContract, outputsOf, type AllpaidContract } from '../src/lib/chain';
+import { buildCheat, buildDistribute, buildMerge, cheatOutputs, contractLine, explainCheat, jarTree, makeContract, outputsOf, swapPair, type AllpaidContract } from '../src/lib/chain';
 import { splitPot, minPayment, SPLIT_FEE, type JarConfig, lockingBytecodeOf } from '../src/lib/jar';
 import { sampleAddress } from '../src/lib/sample';
 import { binToHex } from '@bitauth/libauth';
@@ -97,7 +97,50 @@ describe('the contract refuses to be cheated', () => {
       .addOutput({ to: config.members[0].address, amount: 99_000n });
     expect(builder).toFailRequireWith(/one output per member/);
     // The page names the contract rule that refused it.
-    expect(explainCheat(contract, config, utxo)).toEqual({ rule: 'one output per member, no extra outputs', line: '32' });
+    expect(explainCheat(contract, config, utxo)).toEqual({
+      rule: 'one output per member, no extra outputs',
+      line: '32',
+      code: 'require(tx.outputs.length == members, "one output per member, no extra outputs");',
+    });
+  });
+
+  it('refuses the second cheat (two members swap amounts) at the amount check, not the output count', async () => {
+    const contract = makeContract(config, provider);
+    const utxo = fund(contract, 100_000n);
+    const honest = splitPot(100_000n, [5000, 3000, 2000]);
+    const outputs = cheatOutputs(config, utxo, 'swap')!;
+    // Every member is paid, in member order, and the total is the honest total: only two amounts trade places.
+    expect(outputs.map((o) => o.to)).toEqual(config.members.map((m) => m.address));
+    expect(outputs.map((o) => o.amount)).toEqual([honest[1], honest[0], honest[2]]);
+    expect(outputs.reduce((sum, o) => sum + o.amount, 0n)).toBe(honest.reduce((a, b) => a + b, 0n));
+
+    const cheat = buildCheat(contract, config, utxo, 'swap');
+    await expect(provider.sendRawTransaction(cheat.hex)).rejects.toThrow();
+    expect(await provider.getUtxos(contract.address)).toHaveLength(1);
+    expect(explainCheat(contract, config, utxo, 'swap')).toEqual({
+      rule: 'output 0 has the wrong amount',
+      line: '39',
+      code: 'require(tx.outputs[0].value == share0, "output 0 has the wrong amount");',
+    });
+    // The honest split of the same coin still goes through afterwards.
+    await provider.sendRawTransaction(buildDistribute(contract, config, utxo).hex);
+    expect(await provider.getUtxos(contract.address)).toHaveLength(0);
+  });
+
+  it('has nothing to swap when every member gets the same amount, and says so instead of sending', () => {
+    expect(swapPair([49_500n, 49_500n])).toBeNull();
+    expect(swapPair([49_500n, 49_500n, 49_501n])).toEqual([0, 2]);
+    const even = jar([5000, 5000]);
+    const contract = makeContract(even, provider);
+    const utxo = fund(contract, 100_000n);
+    expect(cheatOutputs(even, utxo, 'swap')).toBeNull();
+    expect(() => buildCheat(contract, even, utxo, 'swap')).toThrow(/changes nothing/);
+  });
+
+  it('reads the contract line the refusal names from the compiled source', () => {
+    expect(contractLine(32)).toBe('require(tx.outputs.length == members, "one output per member, no extra outputs");');
+    expect(contractLine('0')).toBeUndefined();
+    expect(contractLine(undefined)).toBeUndefined();
   });
 
   it('refuses an output redirected to someone else, even with the right amount', () => {

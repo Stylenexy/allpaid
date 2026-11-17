@@ -19,6 +19,7 @@ import {
   sandboxPay,
   type JarNode,
   type AllpaidContract,
+  type CheatKind,
 } from './chain';
 import { lockingBytecodeOf, minPaymentFor, splitPot, type JarConfig } from './jar';
 import { binToHex } from '@bitauth/libauth';
@@ -42,9 +43,11 @@ export interface JarEvent {
   ms?: number;
   /** The split was broadcast by another device first. */
   byOther?: boolean;
-  /** For a refused cheat: the contract rule that caught it, and its line in Allpaid.cash. */
+  /** For a refused cheat: which cheat, the contract rule that caught it, its line in Allpaid.cash and that line's code. */
+  cheat?: CheatKind;
   rule?: string;
   line?: string;
+  code?: string;
 }
 
 export type JarStatus = 'connecting' | 'watching' | 'offline';
@@ -64,6 +67,8 @@ export interface JarSnapshot {
   /** Last split of each jar in the tree, by node id. */
   lastSplits: Record<string, JarEvent>;
   cheatArmed: boolean;
+  /** Which cheat the thief will try on the next payment. */
+  cheatKind: CheatKind;
   autoSplit: boolean;
   waiting: number;
 }
@@ -109,6 +114,7 @@ export class JarEngine {
       splitCount: 0,
       lastSplits: {},
       cheatArmed: false,
+      cheatKind: 'all',
       autoSplit: !options.observeOnly,
       waiting: 0,
     };
@@ -190,9 +196,9 @@ export class JarEngine {
   }
 
   /** The next payment into the root jar is first offered to a thief. The network has to refuse it. */
-  armCheat() {
+  armCheat(kind: CheatKind = 'all') {
     if (this.options.observeOnly) return;
-    this.set({ cheatArmed: true });
+    this.set({ cheatArmed: true, cheatKind: kind });
   }
 
   disarmCheat() {
@@ -318,15 +324,23 @@ export class JarEngine {
 
   private async tryCheat(node: LiveNode, utxo: SpendableUtxo) {
     if (!this.provider) return;
+    const kind = this.snapshot.cheatKind;
     this.set({ cheatArmed: false });
-    const tx = buildCheat(node.contract, node.config, utxo);
+    let tx;
+    try {
+      tx = buildCheat(node.contract, node.config, utxo, kind);
+    } catch (error) {
+      // Equal amounts: there is nothing to swap. Nothing was sent; say so instead of faking a refusal.
+      this.push(node, { kind: 'error', cheat: kind, satoshis: utxo.satoshis, message: `The thief gave up: ${errorText(error)}` });
+      return;
+    }
     try {
       await broadcast(this.provider, tx);
       // If this ever happens the contract is broken. Say so loudly.
-      this.push(node, { kind: 'error', txid: tx.txid, message: 'The network accepted the cheat. This should be impossible; please report it.' });
+      this.push(node, { kind: 'error', cheat: kind, txid: tx.txid, message: 'The network accepted the cheat. This should be impossible; please report it.' });
     } catch (error) {
-      const why = explainCheat(node.contract, node.config, utxo);
-      this.push(node, { kind: 'cheat', satoshis: utxo.satoshis, message: errorText(error), rule: why?.rule, line: why?.line });
+      const why = explainCheat(node.contract, node.config, utxo, kind);
+      this.push(node, { kind: 'cheat', cheat: kind, satoshis: utxo.satoshis, message: errorText(error), rule: why?.rule, line: why?.line, code: why?.code });
     }
   }
 }

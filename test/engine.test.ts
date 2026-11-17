@@ -46,4 +46,21 @@ describe('the watcher', () => {
     expect(cheat?.message).toMatch(/OP_VERIFY/);
     expect(cheatResult(engine.getSnapshot().events)).toEqual({ refusal: cheat, honest: true });
   });
+
+  it("lets the thief swap two members' amounts, records the amount rule on line 39, then splits honestly", async () => {
+    const engine = new JarEngine(SAMPLE_BAND, jarAddress(SAMPLE_BAND));
+    await engine.start();
+    await until(() => engine.getSnapshot().status === 'watching');
+    engine.armCheat('swap');
+    expect(engine.getSnapshot().cheatKind).toBe('swap');
+    engine.simulatePayment(100_000n);
+    await until(() => engine.getSnapshot().events.some((e) => e.kind === 'split' && e.node === '0.3'));
+    engine.stop();
+    const cheat = engine.getSnapshot().events.find((e) => e.kind === 'cheat');
+    expect(cheat?.cheat).toBe('swap');
+    expect(cheat?.rule).toBe('output 0 has the wrong amount');
+    expect(cheat?.line).toBe('39');
+    expect(cheat?.code).toContain('tx.outputs[0].value == share0');
+    expect(cheatResult(engine.getSnapshot().events)).toEqual({ refusal: cheat, honest: true });
+  });
 });
