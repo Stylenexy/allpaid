@@ -1,7 +1,8 @@
 // The pay card: a BIP21 QR any wallet can scan, plus WizardConnect for a
 // wallet that pairs with the page and signs the payment it builds.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useWizardConnect, WizardConnectQRDialog } from '@wizardconnect/react';
+import { useWizardConnect } from '@wizardconnect/react';
+import { WalletDialog } from './WalletDialog';
 import type { JarConfig } from '../lib/jar';
 import type { JarEngine, JarSnapshot } from '../lib/engine';
 import { bch, bip21Amount, parseBch } from '../lib/format';
@@ -241,7 +242,7 @@ function WizardPay({ config, jarAddress, amount, disabled }: { config: JarConfig
       )}
       {wc.error && <p className="problem">{wc.error}</p>}
       {wc.uri && wc.qrUri && (
-        <WizardConnectQRDialog
+        <WalletDialog
           show={wc.state === 'connecting'}
           onClose={() => wc.disconnect()}
           uri={wc.uri}

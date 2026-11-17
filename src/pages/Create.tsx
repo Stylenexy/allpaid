@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useWizardConnect, WizardConnectQRDialog } from '@wizardconnect/react';
+import { useWizardConnect } from '@wizardconnect/react';
+import { WalletDialog } from '../components/WalletDialog';
 import {
   decodeJar,
   encodeJar,
@@ -316,7 +317,7 @@ export function Create() {
             {walletFilled && <p className="hint" role="status">Empty member rows filled from your wallet.</p>}
             {(walletProblem || wc.error) && <p className="problem" role="alert">{walletProblem || 'Could not pair with your wallet. Please try again.'}</p>}
             {wc.uri && wc.qrUri && (
-              <WizardConnectQRDialog
+              <WalletDialog
                 show={wc.state === 'connecting'}
                 onClose={() => { setWalletFill(false); void wc.disconnect(); }}
                 uri={wc.uri}

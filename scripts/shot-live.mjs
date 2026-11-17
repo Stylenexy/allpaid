@@ -9,10 +9,14 @@ for (const [w, h, tag] of [[1440, 900, '1440'], [360, 780, '360']]) {
   page.on('pageerror', (e) => errors.push(`${tag} ${e.message}`));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(`${tag} ${m.text()}`); });
   for (const path of ['/', '/try']) {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
     await page.goto(base + path, { waitUntil: 'load', timeout: 45000 });
     await page.waitForTimeout(3000);
     const name = path === '/' ? 'home' : path.slice(1);
     await page.screenshot({ path: `docs/shots/live/${name}-${tag}.png` });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.reload({ waitUntil: 'load', timeout: 45000 });
+    await page.waitForTimeout(3000);
     await page.screenshot({ path: `docs/shots/live/${name}-${tag}-full.png`, fullPage: true });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     if (overflow) errors.push(`${tag} ${path} horizontal overflow`);

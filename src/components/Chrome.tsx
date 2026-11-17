@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { SITE } from '../site';
 import { onLinkClick } from '../router';
 import { Logo } from './TinMark';
-import { shortAddress } from '../lib/format';
+import { shortAddress, shortHash } from '../lib/format';
 
 /** Required by BCH BLAZE 2026: slides, source code, and an EMBER2026 donation address. */
 export function Banner() {
@@ -35,7 +35,8 @@ export function Banner() {
         </a>
         {SITE.emberAddress ? (
           <button type="button" className="banner-copy" onClick={copy} title={SITE.emberAddress}>
-            EMBER2026 votes: <span className="mono">{shortAddress(SITE.emberAddress)}</span>
+            EMBER2026 votes: <span className="mono banner-address-long">{shortAddress(SITE.emberAddress)}</span>
+            <span className="mono banner-address-short">{shortHash(SITE.emberAddress.split(':').pop() || SITE.emberAddress)}</span>
             <span aria-live="polite">{copied ? ' copied' : ''}</span>
           </button>
         ) : null}

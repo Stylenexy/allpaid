@@ -2,7 +2,7 @@
 
 /* ---------- Banner (required by BCH BLAZE 2026) ---------- */
 .banner {
-  background: rgba(9,13,16,.94);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
   color: var(--text);
   font-size: var(--step--1);
   position: relative;
@@ -45,6 +45,14 @@
   font-size: inherit;
 }
 
+.banner-copy .mono { white-space:nowrap; }
+.banner-address-short { display:none; }
+
+@media (max-width: 420px) {
+  .banner-address-long { display:none; }
+  .banner-address-short { display:inline; }
+}
+
 .banner-todo {
   color: var(--text-soft);
 }
@@ -54,7 +62,7 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(13, 13, 13, 0.9);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -425,6 +433,26 @@
 
 .wiz-ok a {
   color: var(--money);
+}
+
+.wc-dialog button[aria-label='Close'] {
+  min-width: 40px;
+  min-height: 40px;
+  justify-content: center;
+}
+
+.wc-dialog button[aria-label='Copy URI'] {
+  color: var(--money);
+}
+
+/* The library sets both the URI and the copied label's colors inline. */
+.wc-dialog button[aria-label='Copy URI'] p,
+.wc-dialog button[aria-label='Copy URI'] span {
+  color: var(--money) !important;
+}
+
+.wc-dialog button[aria-label='Copy URI'] svg * {
+  stroke: var(--money);
 }
 
 .jar-side {
@@ -923,7 +951,7 @@ fieldset.field legend {
 }
 
 /* The inner pages are instruments: agreement, test bench and payment terminal. */
-.nav { background:rgba(9,13,16,.94); backdrop-filter:none; }
+.nav { backdrop-filter:none; }
 .nav-link { min-height:44px; display:inline-flex; align-items:center; }
 .logo-word { font-size:1.4rem; }
 .footer-word { color:var(--text-soft); font-size:clamp(3rem,14vw,10rem); }

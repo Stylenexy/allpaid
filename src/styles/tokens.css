@@ -13,7 +13,7 @@
   --ice: #dceaff;
   --sky: #5299f8;
   --nested: #ff8050;
-  --metal: linear-gradient(110deg, #dceaff 10%, #fff 35%, #a9b9c3 58%, #dceaff 78%, #fff);
+  --metal: linear-gradient(110deg, #fff 0%, #dceaff 44%, #a9b9c3 50%, #dceaff 56%, #fff);
   --line: rgba(255, 255, 255, 0.1);
   --line-strong: rgba(255, 255, 255, 0.2);
 

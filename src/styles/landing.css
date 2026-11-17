@@ -3,7 +3,7 @@
 .narrow { max-width:850px; }
 .sec-title { font-size:var(--step-4); max-width:19em; letter-spacing:-.045em; }
 .chrome-type { color:var(--ice); }
-.hero-title .chrome-type,.cta .chrome-type { background:var(--metal); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.hero-title .chrome-type,.cta .chrome-type { background:var(--metal); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
 .keep-words { white-space:nowrap; }
 .sec-text { margin-top:var(--s-5); font-size:var(--step-1); color:var(--text-soft); max-width:44em; }
 .sec-text em { color:var(--text); font-style:normal; }
@@ -25,6 +25,7 @@
 .hero-art text:last-child { transform:translateY(-24px); }
 .hero-foot { display:flex; justify-content:space-between; align-items:center; gap:var(--s-7); }
 .hero-copy { max-width:530px; }
+.hero-copy .hint { margin-top:var(--s-3); }
 .hero-lead { font-size:var(--step-1); color:var(--text-soft); text-align:left; }
 .hero-payment { display:grid; grid-template-columns:auto minmax(0,1fr); gap:var(--s-4); max-width:430px; align-items:center; }
 .hero-payment p { font-size:var(--step--1); color:var(--text-soft); margin:var(--s-1) 0; }
