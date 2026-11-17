@@ -2,6 +2,7 @@ node_modules
 dist
 dist-keeper
 dist-chipnet
+dist-mainnet
 .vercel
 .env*
 *.log
