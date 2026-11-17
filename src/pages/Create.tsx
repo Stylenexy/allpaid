@@ -140,9 +140,10 @@ export function Create() {
   const problemFor = (field: string) => (touched ? problems.find((p) => p.field === field)?.message : undefined);
   // Live readiness, shown before anything is touched: what still stands between the form and a jar.
   const hasProblem = (field: string) => problems.some((p) => p.field === field);
-  const rowReady = (i: number) =>
-    !!rows[i] && !!rows[i].name.trim() && !!(rows[i].jar || rows[i].address.trim()) && !hasProblem(`m${i}.name`) && !hasProblem(`m${i}.address`);
-  const readyCount = rows.filter((_, i) => rowReady(i)).length;
+  const addrReady = (i: number) => !!rows[i] && !!(rows[i].jar || rows[i].address.trim()) && !hasProblem(`m${i}.address`);
+  const nameOk = (i: number) => !!rows[i] && !!rows[i].name.trim() && !hasProblem(`m${i}.name`);
+  const addrCount = rows.filter((_, i) => addrReady(i)).length;
+  const namedCount = rows.filter((_, i) => nameOk(i)).length;
   const nameReady = !!name.trim() && !hasProblem('name');
   const sharesReady = total === TOTAL_BPS && !problems.some((p) => p.field === 'bps' || /^m\d+\.bps$/.test(p.field));
 
@@ -254,7 +255,7 @@ export function Create() {
                         aria-invalid={!!problemFor(`m${i}.name`)}
                       />
                     </div>
-                    <div className={`field row-addr ${rowReady(i) ? 'is-ok' : ''}`}>
+                    <div className={`field row-addr ${addrReady(i) ? 'is-ok' : ''}`}>
                       <label htmlFor={`m${i}-addr`}>Payout address or jar link</label>
                       <input
                         id={`m${i}-addr`}
@@ -399,10 +400,16 @@ export function Create() {
                       <p className="preview-label">The QR appears when</p>
                       <ul className="v3a-checks">
                         <li className={nameReady ? 'is-ok' : ''}>The group has a name</li>
-                        <li className={readyCount === rows.length ? 'is-ok' : ''}>
-                          Every member has a name and a valid {prefix} address{' '}
+                        <li className={namedCount === rows.length ? 'is-ok' : ''}>
+                          Every member has a name{' '}
                           <span className="num">
-                            ({readyCount} of {rows.length})
+                            ({namedCount} of {rows.length})
+                          </span>
+                        </li>
+                        <li className={addrCount === rows.length ? 'is-ok' : ''}>
+                          Every member has a valid {prefix} address{' '}
+                          <span className="num">
+                            ({addrCount} of {rows.length})
                           </span>
                         </li>
                         <li className={sharesReady ? 'is-ok' : ''}>The shares add up to 100%</li>

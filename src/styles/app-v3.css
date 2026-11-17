@@ -242,7 +242,8 @@ html.v3-app body::before { display: none; }
   transition: border-color 0.25s, background 0.25s;
 }
 .v3a .input.mono { font-size: 0.9rem; word-break: normal; text-overflow: ellipsis; }
-.v3a .input::placeholder { color: rgba(242, 243, 243, 0.58); opacity: 1; }
+/* Placeholders read as examples, never as values already typed. */
+.v3a .input::placeholder { color: rgba(242, 243, 243, 0.34); opacity: 1; }
 .v3a .input:hover { border-color: rgba(255, 255, 255, 0.16); }
 .v3a .input:focus-visible {
   outline: 2px solid var(--v3-money);
