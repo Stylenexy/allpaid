@@ -163,7 +163,7 @@ Event templates, a hosted keeper with payout alerts, shares shown in fiat at pay
 
 ## Pending before submission
 
-Waiting on the author: the first funded mainnet run (transaction ids into [`docs/MAINNET-PROOF.md`](docs/MAINNET-PROOF.md) and the table above), WizardConnect pairing with Selene, a public demo jar on the home page, the demo video, and making this repository public.
+Waiting on the author: the first funded mainnet run (transaction ids into [`docs/MAINNET-PROOF.md`](docs/MAINNET-PROOF.md) and the table above), WizardConnect pairing with Selene, a public demo jar on the home page, and the demo video.
 
 ## Run it locally
 
