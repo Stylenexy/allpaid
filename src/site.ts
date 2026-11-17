@@ -2,7 +2,7 @@
 // An empty value hides that link in the banner until it is filled.
 export const SITE = {
   /** Short presentation based on the BLAZE "Widget Factory" template. */
-  slidesUrl: '',
+  slidesUrl: 'https://docs.google.com/presentation/d/1J7cXGxUmwd15lzGnUIFYjCZ-jcg8NPc7lWkUDAluLS0/edit?usp=sharing',
   /** Source code. */
   repoUrl: 'https://github.com/Stylenexy/allpaid',
   /** CashTokens-aware address (bitcoincash:z…) that receives EMBER2026 community votes. */

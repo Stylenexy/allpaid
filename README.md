@@ -10,7 +10,7 @@ One QR. Everyone gets paid.
 
 [![ci](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml/badge.svg)](https://github.com/Stylenexy/allpaid/actions/workflows/ci.yml) ![tests](https://img.shields.io/badge/tests-87%20passing-2ea44f) ![license](https://img.shields.io/badge/license-MIT-blue) ![owner keys](https://img.shields.io/badge/owner%20keys-0-2ea44f) [![Pay this team on BCH](public/badge.svg)](#embed-and-badge)
 
-**[Live app](https://allpaid.vercel.app)** · **[Try it, no wallet](https://allpaid.vercel.app/try)** · **[Make a jar](https://allpaid.vercel.app/new)**
+**[Live app](https://allpaid.vercel.app)** · **[Try it, no wallet](https://allpaid.vercel.app/try)** · **[Make a jar](https://allpaid.vercel.app/new)** · **[Slides](https://docs.google.com/presentation/d/1J7cXGxUmwd15lzGnUIFYjCZ-jcg8NPc7lWkUDAluLS0/edit?usp=sharing)**
 
 </div>
 
@@ -33,7 +33,7 @@ Built for **BCH BLAZE 2026, Mainnet Track**, November 2026. The contract has not
 | Anyone can make a useful BCH mainnet transaction with the app | Pay into a jar from any wallet (BIP21 QR) or through WizardConnect; the app then broadcasts the split, a second mainnet transaction with one output per member, and one more per nested jar | [`PayPanel.tsx`](src/components/PayPanel.tsx), [`engine.ts`](src/lib/engine.ts). Mainnet transaction ids: [`docs/MAINNET-PROOF.md`](docs/MAINNET-PROOF.md) (first funded run pending) |
 | WizardConnect integration | `@wizardconnect/react` 0.2.6 pairs a wallet over the relay; the app derives the wallet's addresses from the shared xpubs, finds its coins, builds the payment with CashScript and asks the wallet to sign it with `inputPaths` | [`wallet.ts`](src/lib/wallet.ts), [`PayPanel.tsx`](src/components/PayPanel.tsx). Wallet pairing with Selene: pending, see [Pending](#pending-before-submission). [`/new`](https://allpaid.vercel.app/new) can also fill a jar's members from a paired wallet |
 | Live demo a judge can open with one link | Static site, no account, no backend | [allpaid.vercel.app](https://allpaid.vercel.app), play money at [/try](https://allpaid.vercel.app/try) |
-| Banner on top of the home page: slides, repo, EMBER2026 address | Strip above the navigation, filled from one config file | [`Chrome.tsx`](src/components/Chrome.tsx) `Banner`, values in [`site.ts`](src/site.ts); the banner shows each link only once it is set (EMBER2026 address: live; slides link: pending) |
+| Banner on top of the home page: slides, repo, EMBER2026 address | Strip above the navigation, filled from one config file | [`Chrome.tsx`](src/components/Chrome.tsx) `Banner`, values in [`site.ts`](src/site.ts); the banner shows each link only once it is set (slides and EMBER2026 address: live) |
 | Real nodes judge every transaction, not only the in-tab VM | `npm run mainnet -- <jar link>` waits for a payment into a mainnet jar, sends both cheats to mainnet nodes (refused at lines 32 and 39), then sends the split and the nested split. No key is involved: a cheat is a transaction the network refuses. `npm run mainnet -- --dry` runs the same steps in memory | [`scripts/mainnet-proof.ts`](scripts/mainnet-proof.ts); results in [`docs/MAINNET-PROOF.md`](docs/MAINNET-PROOF.md). Optional chipnet version: [`scripts/chipnet-proof.ts`](scripts/chipnet-proof.ts) |
 | Original work | Written from scratch during the hackathon; first commit 17 November 2026 (`git log --reverse`). Prior concept work is listed under [Credits](#credits--prior-work) | git history |
 
@@ -163,7 +163,7 @@ Event templates, a hosted keeper with payout alerts, shares shown in fiat at pay
 
 ## Pending before submission
 
-Waiting on the author: the first funded mainnet run (transaction ids into [`docs/MAINNET-PROOF.md`](docs/MAINNET-PROOF.md) and the table above), WizardConnect pairing with Selene, a public demo jar on the home page, the slides link in the banner, the demo video, and making this repository public.
+Waiting on the author: the first funded mainnet run (transaction ids into [`docs/MAINNET-PROOF.md`](docs/MAINNET-PROOF.md) and the table above), WizardConnect pairing with Selene, a public demo jar on the home page, the demo video, and making this repository public.
 
 ## Run it locally
 
