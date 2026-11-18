@@ -2,7 +2,6 @@
 // control sits above the caption card, moves a visible cursor there, rings it,
 // then presses or types into the real control. Nothing on the page is faked: the
 // jar, the split and the refusals that follow are the app's own.
-// Pattern taken from the practice mode of Dex's thesis app (Sowan.id, "kursor bayangan").
 
 import { navigate } from '../router';
 
