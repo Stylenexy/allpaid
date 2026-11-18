@@ -107,6 +107,7 @@ html.v3-app body::before { display: none; }
 
 /* Meta under a jar's title: network, members, live status as a glass chip. */
 .v3a-meta { display: grid; justify-items: start; gap: 8px; margin-top: 1.6rem; }
+.v3a-meta .v3a-watch { margin-top: 10px; }
 .v3a .net { display: block; margin: 0; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.01em; color: rgba(242, 243, 243, 0.8); }
 .v3a .net-mainnet { color: var(--v3-money); }
 .v3a .jar-sub { margin: 0; max-width: 46em; color: rgba(242, 243, 243, 0.74); font-size: 1.02rem; }

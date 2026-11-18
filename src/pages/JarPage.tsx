@@ -11,6 +11,7 @@ import { SITE } from '../site';
 import { Logo } from '../components/TinMark';
 import { Title, useRise, useStonePage } from '../components/AppV3';
 import { Pill, Wall } from '../landing3/kit';
+import { WatchButton } from '../demo/WatchButton';
 
 const NET_LABEL = {
   mainnet: 'Mainnet · real BCH',
@@ -105,6 +106,7 @@ function JarView({ config }: { config: JarConfig }) {
                 <span className="status-mark" aria-hidden="true"><Logo size={18} /></span>
                 {snap.status === 'watching' ? 'Watching the jar' : snap.status === 'connecting' ? 'Connecting…' : 'Offline, retrying'}
               </span>
+              {sandbox && <WatchButton className="v3a-watch" />}
             </div>
           </div>
           {!sandbox && (
@@ -123,11 +125,11 @@ function JarView({ config }: { config: JarConfig }) {
         <div className="jar-grid">
           <PayPanel config={config} snap={snap} engine={engine} />
           <div className="jar-side">
-            <div className="v3a-side-block" data-rise>
+            <div className="v3a-side-block" data-rise data-demo="tree">
               <h2 className="side-title v3a-h3">Who gets what</h2>
               <SplitTree config={config} snap={snap} />
             </div>
-            <div className="v3a-side-block" data-rise>
+            <div className="v3a-side-block" data-rise data-demo="activity">
               <h2 className="side-title v3a-h3">What happened</h2>
               <Activity config={config} snap={snap} />
             </div>

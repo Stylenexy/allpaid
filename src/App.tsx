@@ -1,10 +1,12 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useRoute, onLinkClick } from './router';
 import { Banner, Footer, Nav } from './components/Chrome';
+import { clearDemoFromUrl, DEMO_EVENT, demoInUrl } from './demo/trigger';
 const LandingV3 = lazy(() => import('./landing3/LandingV3').then((m) => ({ default: m.LandingV3 })));
 
 const Create = lazy(() => import('./pages/Create').then((m) => ({ default: m.Create })));
 const JarRoute = lazy(() => import('./pages/JarPage').then((m) => ({ default: m.JarRoute })));
+const AutoDemo = lazy(() => import('./demo/AutoDemo').then((m) => ({ default: m.AutoDemo })));
 
 const TITLES = {
   home: 'Allpaid: One QR. All paid.',
@@ -19,6 +21,18 @@ export function App() {
   useEffect(() => {
     document.title = TITLES[route.page];
   }, [route.page]);
+
+  // The automatic demo runs over every page, so it lives here, outside the routes.
+  const [demo, setDemo] = useState(demoInUrl);
+  useEffect(() => {
+    const start = () => setDemo(true);
+    window.addEventListener(DEMO_EVENT, start);
+    return () => window.removeEventListener(DEMO_EVENT, start);
+  }, []);
+  const endDemo = useCallback(() => {
+    setDemo(false);
+    clearDemoFromUrl();
+  }, []);
 
   return (
     <>
@@ -42,6 +56,11 @@ export function App() {
         )}
       </Suspense>
       {route.page !== 'home' && <Footer />}
+      {demo && (
+        <Suspense fallback={null}>
+          <AutoDemo onExit={endDemo} />
+        </Suspense>
+      )}
     </>
   );
 }

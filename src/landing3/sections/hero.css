@@ -66,6 +66,7 @@
 .v3-hero-title.v3-caps { font-size: clamp(2.3rem, 5.4vw, 5.8rem); }
 .v3-hero-lede.v3-lede { margin-top: 1rem; max-width: 30em; color: rgba(242, 243, 243, 0.8); }
 .v3-hero-actions .v3-actions { margin-top: clamp(20px, 3vh, 30px); }
+.v3-hero-watch { display: flex; justify-content: center; margin-top: clamp(14px, 2.2vh, 22px); }
 
 /* A thin line that keeps falling: there is more below, without a label. */
 .v3-hero-line { position: relative; z-index: 2; display: block; margin: auto 0 clamp(14px, 2.4vh, 24px); width: 1px; height: 44px; overflow: hidden; background: rgba(242, 243, 243, 0.16); }

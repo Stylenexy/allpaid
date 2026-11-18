@@ -4,6 +4,7 @@
 // hall darkens into the next scene.
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { Caps, Lede, Pill, Scene, useMotion } from '../kit';
+import { WatchButton } from '../../demo/WatchButton';
 import { gsap } from '../motion3';
 import { PRELOADER_DONE } from './Preloader';
 import './hero.css';
@@ -140,6 +141,9 @@ export function Hero() {
             <div className="v3-actions is-center">
               <Pill href="/try" tone="money" cursor="split">Try it with play money</Pill>
               <Pill href="/new" tone="light">Make your team&rsquo;s jar</Pill>
+            </div>
+            <div className="v3-hero-watch">
+              <WatchButton />
             </div>
           </div>
         </div>

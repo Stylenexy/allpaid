@@ -1,0 +1,53 @@
+/* The "Watch it run itself" button, on the landing and the play-money jar. */
+
+/* While the demo runs, the buttons that start it step aside. */
+.demo-on .demo-start {
+  visibility: hidden;
+}
+
+/* The start buttons. */
+.demo-play {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(242, 243, 243, 0.38);
+  transition: background 0.25s, border-color 0.25s;
+}
+.demo-play svg {
+  width: 11px;
+  height: 11px;
+  margin-left: 2px;
+  fill: currentColor;
+}
+.demo-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 6px 4px 4px;
+  border: 0;
+  background: none;
+  color: rgba(242, 243, 243, 0.86);
+  font: 500 0.98rem/1.2 'Inter Tight', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+}
+.demo-watch:hover {
+  color: #fff;
+}
+.demo-watch:hover .demo-play {
+  background: #0ac18e;
+  border-color: #0ac18e;
+  color: #03251b;
+}
+.demo-watch:focus-visible {
+  outline: 2px solid #0ac18e;
+  outline-offset: 4px;
+  border-radius: 999px;
+}
+.demo-watch small {
+  font-size: 0.86em;
+  color: rgba(242, 243, 243, 0.5);
+}
