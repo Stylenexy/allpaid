@@ -35,8 +35,6 @@ const TEMPO = {
 };
 
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-/** Focusing an input on a phone opens its keyboard, so the demo only focuses with a mouse. */
-const finePointer = () => matchMedia('(pointer: fine)').matches;
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const nextFrame = () => new Promise<number>((resolve) => requestAnimationFrame(resolve));
@@ -60,6 +58,9 @@ function setValue(input: HTMLInputElement, value: string) {
 export class Driver {
   private pos: Point;
   private labelSize = { w: 0, h: 0 };
+  /** The ringed control: the label sits outside it, so it never covers what is being explained. */
+  private target: DOMRect | null = null;
+  private navBottom = 0;
   private readonly reduced = reducedMotion();
   private readonly ui: DemoUi;
   private readonly signal: AbortSignal;
@@ -145,14 +146,30 @@ export class Driver {
     this.ringOff();
   }
 
-  /** The arrow's tip at p; the label beside it, flipped to stay on screen and above the card. */
+  /**
+   * The arrow's tip at p. The label goes just below the ringed control (or above it when the
+   * caption card is in the way); with nothing ringed, or no room, it sits beside the arrow.
+   */
   private place(p: Point) {
     this.pos = p;
-    this.ui.cursor.style.transform = `translate3d(${Math.round(p.x - 3)}px, ${Math.round(p.y - 2)}px, 0)`;
+    const ox = Math.round(p.x - 3);
+    const oy = Math.round(p.y - 2);
+    this.ui.cursor.style.transform = `translate3d(${ox}px, ${oy}px, 0)`;
     const { w, h } = this.labelSize;
-    const right = p.x + 20 + w <= innerWidth - 10;
-    const below = p.y + 28 + h <= this.ui.freeBottom() - 8;
-    this.ui.label.style.transform = `translate(${right ? 20 : -(w + 8)}px, ${below ? 28 : -(h + 6)}px)`;
+    const bottom = this.ui.freeBottom() - 8;
+    let x: number | null = null;
+    let y: number | null = null;
+    const r = this.target;
+    if (r) {
+      if (r.bottom + 10 + h <= bottom) y = r.bottom + 10;
+      else if (r.top - 10 - h >= this.navBottom + 6) y = r.top - 10 - h;
+      if (y !== null) x = clamp(p.x - 8, 10, innerWidth - 10 - w);
+    }
+    if (x === null || y === null) {
+      x = p.x + 20 + w <= innerWidth - 10 ? p.x + 20 : p.x - w - 8;
+      y = p.y + 28 + h <= bottom ? p.y + 28 : p.y - h - 6;
+    }
+    this.ui.label.style.transform = `translate(${Math.round(x - ox)}px, ${Math.round(y - oy)}px)`;
   }
 
   private aim(el: HTMLElement, fx: number, fy: number): Point {
@@ -218,6 +235,9 @@ export class Driver {
     ring.style.height = `${Math.round(r.height + pad * 2)}px`;
     ring.style.borderRadius = `${Math.min(radius + pad, (r.height + pad * 2) / 2)}px`;
     ring.dataset.on = '1';
+    this.target = r;
+    const nav = document.querySelector('header.nav')?.getBoundingClientRect();
+    this.navBottom = nav && nav.bottom > 0 ? nav.bottom : 0;
     if (pulse && !this.reduced) {
       ring.dataset.pulse = '0';
       void ring.offsetWidth; // restart the pulse
@@ -226,6 +246,7 @@ export class Driver {
   }
 
   private ringOff() {
+    this.target = null;
     this.ui.ring.dataset.on = '0';
     this.ui.ring.dataset.pulse = '0';
   }
@@ -297,14 +318,12 @@ export class Driver {
     const el = (await this.approach(selector, label, 0.28, 0.55)) as HTMLInputElement;
     this.ripple();
     await this.wait(160);
-    if (finePointer()) el.focus({ preventScroll: true });
     setValue(el, '');
     for (let i = 1; i <= text.length; i += 1) {
       setValue(el, text.slice(0, i));
       await this.wait(perChar + ((i * 37) % 23));
     }
     await this.hold(el, 380, 0.28, 0.55);
-    el.blur();
     this.ringOff();
     await this.wait(TEMPO.gap / 2);
   }

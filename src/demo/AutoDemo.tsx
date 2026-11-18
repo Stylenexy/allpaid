@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { navigate } from '../router';
 import { Driver, Stopped } from './driver';
+import { clearDemoFromUrl, resetPages } from './trigger';
 import { CHAPTERS, STEPS } from './script';
 import './demo.css';
 
@@ -33,6 +34,7 @@ export function AutoDemo({ onExit }: { onExit: () => void }) {
   const ring = useRef<HTMLDivElement>(null);
   const ripple = useRef<HTMLDivElement>(null);
   const card = useRef<HTMLElement>(null);
+  const endButton = useRef<HTMLButtonElement>(null);
   const pausedRef = useRef(false);
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>('run');
@@ -40,8 +42,18 @@ export function AutoDemo({ onExit }: { onExit: () => void }) {
   const [round, setRound] = useState(0);
 
   useEffect(() => {
+    if (phase === 'end') endButton.current?.focus({ preventScroll: true });
+  }, [phase]);
+
+  useEffect(() => {
+    // Keyboard focus moves to the card while the demo runs (the button that started it hides),
+    // and goes back to that button when the demo closes.
+    const before = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const root = document.documentElement;
     root.classList.add('demo-on');
+    card.current?.focus({ preventScroll: true });
+    // A reload or Back must not start the demo again.
+    clearDemoFromUrl();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onExit();
     };
@@ -49,6 +61,7 @@ export function AutoDemo({ onExit }: { onExit: () => void }) {
     return () => {
       root.classList.remove('demo-on');
       window.removeEventListener('keydown', onKey);
+      if (before?.isConnected) before.focus({ preventScroll: true });
     };
   }, [onExit]);
 
@@ -69,6 +82,7 @@ export function AutoDemo({ onExit }: { onExit: () => void }) {
       controller.signal,
       () => pausedRef.current,
     );
+    resetPages();
     (async () => {
       for (const [i, step] of STEPS.entries()) {
         setIndex(i);
@@ -126,54 +140,40 @@ export function AutoDemo({ onExit }: { onExit: () => void }) {
         </div>
       </div>
 
-      <section ref={card} className={`demo-card ${paused ? 'is-paused' : ''}`} role="region" aria-label="Automatic demo">
+      <section ref={card} tabIndex={-1} className={`demo-card ${paused ? 'is-paused' : ''}`} role="region" aria-label="Automatic demo">
         <span className="demo-bar" aria-hidden="true">
           <i style={{ width: `${progress}%` }} />
         </span>
-        <div className="demo-top">
-          <p className="demo-chapter">
-            {running ? (
-              <>
-                Part {step.chapter} of 3 <span aria-hidden="true">·</span> {CHAPTERS[step.chapter]}
-              </>
-            ) : (
-              'Automatic demo'
-            )}
-          </p>
-          {running && (
-            <p className="demo-count num">
-              {paused ? 'Paused · ' : ''}
-              {index + 1} / {STEPS.length}
-            </p>
-          )}
-          {running && (
-            <button type="button" className="demo-icon" onClick={togglePause} aria-label={paused ? 'Resume the demo' : 'Pause the demo'} title={paused ? 'Resume' : 'Pause'}>
-              {paused ? <PlayIcon /> : <PauseIcon />}
-            </button>
-          )}
-          <button type="button" className="demo-icon" onClick={onExit} aria-label="Close the demo" title="Close (Esc)">
-            <CloseIcon />
-          </button>
-        </div>
         <div aria-live="polite">
           <h2 className="demo-title">{title}</h2>
           <p className="demo-text">{text}</p>
         </div>
-        {!running && (
+        {running ? (
+          <div className="demo-foot">
+            <p className="demo-meta num">
+              {paused ? 'Paused · ' : ''}
+              {CHAPTERS[step.chapter]} · {index + 1} / {STEPS.length}
+            </p>
+            <button type="button" className="demo-icon" onClick={togglePause} aria-label={paused ? 'Resume the demo' : 'Pause the demo'} title={paused ? 'Resume' : 'Pause'}>
+              {paused ? <PlayIcon /> : <PauseIcon />}
+            </button>
+            <button type="button" className="demo-icon" onClick={onExit} aria-label="Close the demo" title="Close (Esc)">
+              <CloseIcon />
+            </button>
+          </div>
+        ) : (
           <div className="demo-actions">
             {phase === 'end' && (
-              <button type="button" className="demo-btn demo-btn--money" onClick={makeOwn}>
+              <button ref={endButton} type="button" className="demo-btn demo-btn--money" onClick={makeOwn}>
                 Make your team&rsquo;s jar
               </button>
             )}
             <button type="button" className="demo-btn" onClick={restart}>
               Watch again
             </button>
-            {phase === 'lost' && (
-              <button type="button" className="demo-btn" onClick={onExit}>
-                Close
-              </button>
-            )}
+            <button type="button" className="demo-btn demo-btn--plain" onClick={onExit}>
+              Close
+            </button>
           </div>
         )}
       </section>

@@ -2,9 +2,15 @@
 // Kept tiny so the landing and the jar page do not load the demo itself until it runs.
 
 export const DEMO_EVENT = 'allpaid:demo';
+/** Asks the app to remount the pages, so each demo run starts on a fresh jar and a blank form. */
+export const DEMO_RESET = 'allpaid:demo-reset';
 
 export function startDemo() {
   window.dispatchEvent(new Event(DEMO_EVENT));
+}
+
+export function resetPages() {
+  window.dispatchEvent(new Event(DEMO_RESET));
 }
 
 /** A shared link such as allpaid.vercel.app/?demo starts the demo on arrival. */

@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useRoute, onLinkClick } from './router';
 import { Banner, Footer, Nav } from './components/Chrome';
-import { clearDemoFromUrl, DEMO_EVENT, demoInUrl } from './demo/trigger';
+import { clearDemoFromUrl, DEMO_EVENT, DEMO_RESET, demoInUrl } from './demo/trigger';
 const LandingV3 = lazy(() => import('./landing3/LandingV3').then((m) => ({ default: m.LandingV3 })));
 
 const Create = lazy(() => import('./pages/Create').then((m) => ({ default: m.Create })));
@@ -24,13 +24,22 @@ export function App() {
 
   // The automatic demo runs over every page, so it lives here, outside the routes.
   const [demo, setDemo] = useState(demoInUrl);
+  // Bumped when a demo run starts or ends: /new and /try remount, so the demo never
+  // leaves its sample addresses in the form or its payments in the play-money jar.
+  const [pageKey, setPageKey] = useState(0);
   useEffect(() => {
     const start = () => setDemo(true);
+    const reset = () => setPageKey((k) => k + 1);
     window.addEventListener(DEMO_EVENT, start);
-    return () => window.removeEventListener(DEMO_EVENT, start);
+    window.addEventListener(DEMO_RESET, reset);
+    return () => {
+      window.removeEventListener(DEMO_EVENT, start);
+      window.removeEventListener(DEMO_RESET, reset);
+    };
   }, []);
   const endDemo = useCallback(() => {
     setDemo(false);
+    setPageKey((k) => k + 1);
     clearDemoFromUrl();
   }, []);
 
@@ -40,9 +49,9 @@ export function App() {
       <Nav current={route.page === 'home' || route.page === 'missing' ? undefined : route.page} variant={route.page === 'home' ? 'v3' : undefined} />
       <Suspense fallback={<main className="wrap page-loading">Loading…</main>}>
         {route.page === 'home' && <LandingV3 />}
-        {route.page === 'new' && <Create />}
+        {route.page === 'new' && <Create key={`new-${pageKey}`} />}
         {route.page === 'jar' && <JarRoute key={route.code} code={route.code} />}
-        {route.page === 'try' && <JarRoute sandbox />}
+        {route.page === 'try' && <JarRoute key={`try-${pageKey}`} sandbox />}
         {route.page === 'missing' && (
           <main className="wrap page-narrow">
             <h1 className="page-title">Nothing at this address</h1>

@@ -12,7 +12,7 @@ export function WatchButton({ className = '' }: { className?: string }) {
         </svg>
       </span>
       <span>
-        Watch it run itself <small>· 90 seconds</small>
+        Watch it run itself <small>· 1 minute</small>
       </span>
     </button>
   );

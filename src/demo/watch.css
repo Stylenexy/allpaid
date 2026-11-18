@@ -13,7 +13,7 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  border: 1px solid rgba(242, 243, 243, 0.38);
+  border: 1px solid rgba(242, 243, 243, 0.5);
   transition: background 0.25s, border-color 0.25s;
 }
 .demo-play svg {
@@ -49,5 +49,5 @@
 }
 .demo-watch small {
   font-size: 0.86em;
-  color: rgba(242, 243, 243, 0.5);
+  color: rgba(242, 243, 243, 0.68);
 }
